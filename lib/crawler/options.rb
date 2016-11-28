@@ -20,7 +20,7 @@ module Crawler
 
         opts.banner = "Site crawler. Usage example: crawl http://localhost:3000"
 
-        opts.on('-U', '[--url] URL', 'The url to crawl. E.g. http://localhost:3000/welcome. Required.') do |v|
+        opts.on('-U', '[--url] URL', 'Crawls the site starting from the url specified. E.g. http://localhost:3000/welcome.') do |v|
           options[:url] = v
         end
 
@@ -45,9 +45,16 @@ module Crawler
           options[:output]
         end
 
-        opts.on('-s', '--screenshots PATH', 'If specified, screenshots are created '\
-                  'visiting each page and saved to the folder specified.') do |v|
+        opts.on('-s', '--screenshots_path PATH',
+                'If specified along with the url, screenshots are captured visiting each page.'\
+                ' Otherwise used to generate a screenshots index based on files caprured previously. ') do |v|
           options[:screenshots_path] = v
+        end
+
+        opts.on('-t', '--template FILENAME',
+                'Specify the template used for indexing.'\
+                '  Default: followups/templates/index.html.erb') do |v|
+          options[:index_template] = v
         end
 
         opts.on('-h', '--help', 'Show this help message and exit.') do | |

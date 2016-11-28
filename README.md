@@ -4,8 +4,8 @@
 
 Crawler is aimed to visit pages available on the site and extract useful information.
 
-It can help maintaining e.g. lists of internal and external links available on the site,
-help creating sitemaps, help in visual testing using screenshots 
+It can help maintaining e.g. lists of internal and external links,
+creating sitemaps, visual testing using screenshots  
 or prepare the list of urls for the more sophisticated tool like [Wraith](https://github.com/BBC-News/wraith). 
 
 Browser based crawling is performed with the help of [Capybara](https://github.com/teamcapybara/capybara) and [Poltergeist](https://github.com/teampoltergeist/poltergeist).
@@ -41,6 +41,11 @@ crawl http://localhost:3000
 With authentication, screenshots and limiting visited page number to 1:
 ```
 crawl https://your.site.com/welcome -u username -p password -n 1 -s tmp/screenshots
+```
+
+Generate index from the captured screenshots. Index is saved to `tmp/screenshots/index.html`.
+```
+crawl -s tmp/screenshots
 ```
 
 see additional options with:

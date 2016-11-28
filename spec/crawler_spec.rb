@@ -7,7 +7,7 @@ describe Crawler do
   end
 
   let(:server) do
-    fixture_path = File.expand_path('fixtures', __dir__)
+    fixture_path = File.expand_path('fixtures/static_site', __dir__)
     app = Rack::Builder.app do
       use Rack::Static, urls: {'/' => 'index.html'}, root: fixture_path
       run Rack::File.new(fixture_path)
