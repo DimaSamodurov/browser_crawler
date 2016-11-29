@@ -10,12 +10,19 @@ module Crawler
 
       # Produce index.html with links to screenshots found in the `path` specified.
       # Optionally file_mask can be provided to filter out files to be indexed.
-      def index_screenshots(path, file_mask: '*.png')
+      def index_directory(path, file_mask: '*.png')
         files = Dir[File.join(path, file_mask)].map{|file| File.basename(file) }
         html = render_index(files: files)
         index_path = File.join(path, 'index.html')
         File.write(index_path, html)
         index_path
+      end
+
+      def index_report(report)
+        sorted_pages = Hash[report.pages.sort_by{|(k,v)| k}]
+        files = Hash[sorted_pages.map do |(k,v)|
+          k
+        end]
       end
 
       private

@@ -37,16 +37,17 @@ describe Crawler do
   end
 
   it 'visits internal pages' do
-    crawler = Crawler::Engine.new(max_pages: 4)
+    crawler = Crawler::Engine.new
     crawler.extract_links(url: url)
-    expect(crawler.report.visited_pages).to eql %w[/ /page1.html /page11.html /page12.html]
+    internal_pages = %w[/ /page1.html /page11.html /page12.html /page2.html /page21.html]
+    expect(internal_pages - crawler.report.visited_pages).to be_empty
   end
 
   describe 'with max_pages option specified' do
     it 'extracts visits not more than specified number of pages' do
       crawler = Crawler::Engine.new(max_pages: 2)
       crawler.extract_links(url: url)
-      expect(crawler.report.visited_pages).to eql ['/', '/page1.html']
+      expect(crawler.report.visited_pages.count).to eql 2
     end
   end
 end

@@ -11,7 +11,7 @@ describe 'command line `crawl URL`' do
     "http://#{server.host}:#{server.port}/"
   end
 
-  report_file = Crawler::Options.default_options[:output]
+  report_file = Crawler::Options.default_options[:report]
 
   it "outputs report to '#{report_file}' by default" do
     `rm #{report_file}`
@@ -33,7 +33,7 @@ describe 'command line `crawl -s`' do
     "http://#{server.host}:#{server.port}/"
   end
 
-  report_file = Crawler::Options.default_options[:output]
+  report_file = Crawler::Options.default_options[:report]
 
   context 'standalone, when URL is not specified' do
     it "creates an html index from screenshots found in the folder." do
@@ -52,6 +52,59 @@ describe 'command line `crawl -s`' do
       `bin/crawl -s #{tmp_dir}`
 
       expect(File.exists?(index_file)).to be_truthy
+    end
+
+    context 'with --wraith-config option' do
+      let(:tmp_dir) { File.expand_path('../tmp', __dir__) }
+      let(:report_file) { File.join(tmp_dir, 'wraith_config.yml') }
+      let(:report) do
+        <<-YAML
+--- !ruby/object:Crawler::Reports::Simple
+pages:
+  "/":
+    :status_code: 200
+    :extracted_links:
+    :screenshot: "tmp/stg/capybara-201611281738516158896902.png"
+  "/welcome/computers":
+    :status_code: 200
+    :extracted_links:
+    :screenshot: "tmp/stg/capybara-201611281738581708361847.png"
+  "/mydevices/mobile":
+    :status_code: 200
+    :extracted_links:
+        YAML
+      end
+      let(:wraith_config_file) { File.join(tmp_dir, 'wraith_config.yml') }
+      let(:wraith_config) do
+        <<-YAML
+browser: phantomjs
+domains:
+  uat: https://localhost:3001/
+  stg: https://localhost:3000/
+screen_widths:
+- 320
+- 768
+- 1024
+- 1280
+directory: shots
+fuzz: 20%
+threshold: 5
+gallery:
+  template: slideshow_template
+  thumb_width: 200
+  thumb_height: 200
+mode: alphanumeric
+paths:
+  '': ''
+        YAML
+      end
+      before do
+        File.write(wraith_config_file, wraith_config)
+      end
+
+      it 'update path: section of the wraith config file' do
+        `bin/crawl -c #{wraith_config_file}`
+      end
     end
   end
 end

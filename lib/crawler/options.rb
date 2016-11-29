@@ -7,7 +7,7 @@ module Crawler
 
     def default_options
       {
-        output: 'tmp/crawl_report.yml',
+        report: 'tmp/crawl_report.yml',
         window_width: 1024,
         window_height: 768
       }
@@ -40,9 +40,9 @@ module Crawler
           options[:window_width], options[:window_height] = v.split('x')
         end
 
-        opts.on('-o', '--output FILE', 'The file path to save report to. '\
+        opts.on('-r', '--report FILE', 'The file path to save report to. '\
                                          'Default: tmp/crawl_report.yml') do |v|
-          options[:output]
+          options[:report] = v
         end
 
         opts.on('-s', '--screenshots_path PATH',
@@ -55,6 +55,11 @@ module Crawler
                 'Specify the template used for indexing.'\
                 '  Default: followups/templates/index.html.erb') do |v|
           options[:index_template] = v
+        end
+
+        opts.on('-c', '--wraith_config FILENAME',
+                'Update config "paths" section with the pages extracted.') do |v|
+          options[:wraith_config] = v
         end
 
         opts.on('-h', '--help', 'Show this help message and exit.') do | |

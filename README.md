@@ -10,8 +10,10 @@ or prepare the list of urls for the more sophisticated tool like [Wraith](https:
 
 Browser based crawling is performed with the help of [Capybara](https://github.com/teamcapybara/capybara) and [Poltergeist](https://github.com/teampoltergeist/poltergeist).
 Javascript is executed before page is analyzed allowing to crawl dynamic content.
+Browser based crawling is essentially an alternative to Wraith's spider mode, 
+which parses html and has limitations to static content by that. 
 
-By default crawler only visits the pages following the links extracted.
+By default crawler visits the pages following the links extracted.
 No button clicks performed other than during the optional authentication step.
 Thus crawler does not perform any updates to the site and can be treated as noninvasive.
 
@@ -57,28 +59,41 @@ crawl -h
 When finished the crawling report will be saved to `crawl_report.yml` file by default.
 You can specify the file path using command line options.
 
+### Usage with Wraith
+
+Crawler can be useful to update `paths:`  section of the wraith's configs.
+
+Provided wraith config is placed to `wraith/configs/capture.yaml` file, do:
+```
+crawl https://your.site.com/welcome -c wraith/configs/capture.yaml 
+```
+
+Or if you have crawling report available, just use it without the URL to skip crawling:
+``` 
+bin/crawl -c wraith/configs/capture.yaml -r tmp/uat/crawl_report.yml
+```
+
 ## Restrictions
 
-Current version has the authorization process hardcoded: 
+Current version has the authentication process hardcoded: 
 the path to login form and the field names used are specific to the project 
 the crawler is extracted from.
 Configuration may be added in a future version.
 
-
 ## Ideas for enhancements
-
-### Integration with test frameworks
-
 It should be easy to crawl the site as part of the automated testing.
 e.g. in order to verify the list of pages available on the site,
 or in order to generate visual report (Wraith does it better).
 
-Another option is to integrate into application test suite 
-to allow accessing pages not easily accessible on real site.
-E.g. pages displayed after data modifications.
-By integrating into an application it
-would be possible to use all the tools/mocks/helpers/ 
-created for the automated test suite.
+### Integration with test frameworks
+
+By integrating crawler into the application test suite 
+it would be possible accessing pages and content not easily accessible on real site.
+E.g. when performing data modifications.
+
+By integrating into test suite it
+would be possible to use all the tools/mocks/helpers/ created to simulate user behavior.
+E.g. mock external request using e.g. VCR.
 
 
 ## Development

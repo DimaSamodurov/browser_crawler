@@ -1,5 +1,27 @@
 module Crawler
   module Reports
+    # Value object that contains crawling results.
+    # Example:
+    # {
+    #   pages: {
+    #     '/':
+    #       {
+    #         screenshot: 'file1.png',
+    #         error: nil,
+    #         extracted_links: ['http://welcome[pdf]', 'http://support']
+    #       },
+    #     'welcome':
+    #       {
+    #         screenshot: 'file2.png',
+    #         error: 'Invalid URI',
+    #         extracted_links: nil
+    #       },
+    #     metadata: {
+    #       custom_attribute: 'Sample report title'
+    #     }
+    #   }
+    # }
+
     class Simple
       attr_reader :pages, :metadata, :error
 
@@ -20,9 +42,9 @@ module Crawler
 
       def record_page_visit(page:, extracted_links: nil, screenshot_filename: nil, error: nil)
         @pages[page] = {
-          extracted_links: extracted_links,
           screenshot: screenshot_filename,
-          error: error
+          error: error,
+          extracted_links: extracted_links
         }
       end
 

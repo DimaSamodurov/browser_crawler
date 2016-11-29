@@ -2,8 +2,13 @@
 
 require "bundler/setup"
 require "crawler"
+require "pry" if ENV['DEBUG'] == 'true'
 
 options = Crawler::Options.parse_args
+
+if options[:screenshots_path]
+  `mkdir -p #{options[:screenshots_path]}` unless File.directory?(options[:screenshots_path])
+end
 
 if options[:url]
   engine = Crawler::Engine.new(
@@ -15,15 +20,21 @@ if options[:url]
     window_height: options[:window_height])
 
   engine.extract_links(url: options[:url]) if options[:url]
-  File.write(options[:output], engine.report.to_yaml)
-  puts "Report is saved to #{options[:output_links]}."
 
-  puts "Total visited pages: #{engine.visited_pages.count}."
+  File.write(options[:report], engine.report.to_yaml)
+
+  puts "Report is saved to #{options[:report]}."
+  puts "Total pages visited: #{engine.visited_pages.count}."
 end
 
 if options[:screenshots_path]
   template = File.read(options[:index_template]) if options[:index_template]
   indexer = Crawler::Followups::ScreenshotsIndexer.new(template: template)
-  file = indexer.index_screenshots(options[:screenshots_path])
+  file = indexer.index_directory(options[:screenshots_path])
   puts "Screenshots index is saved to '#{file}'."
+end
+
+if options[:wraith_config]
+  followup = Crawler::Followups::WraithIntegrator.new(report: File.read(options[:report]))
+  followup.update_config(options[:wraith_config], path_suffix: '?wraith')
 end
