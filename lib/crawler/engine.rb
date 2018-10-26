@@ -1,7 +1,10 @@
 require 'capybara'
+require 'capybara-screenshot'
+
 require_relative 'dsl/sign_in'
 require_relative 'dsl/js_helpers'
 require_relative 'reports/simple'
+require_relative 'support/capybara'
 require 'pry'
 
 module Crawler
@@ -13,24 +16,19 @@ module Crawler
     attr_reader :report
 
     def initialize(save_screenshots_to: nil, max_pages: nil,
-                   username: nil, password: nil, window_width: 1024, window_height: 768)
+                   window_width: 1280, window_height: 1600)
 
       @screenshots_path = save_screenshots_to
-      @username = username
-      @password = password
       @max_pages = max_pages.to_i
       @window_width = window_width.to_i
       @window_height = window_height.to_i
 
+      Capybara.register_chrome_driver(:headless_chrome,
+                                      window_width: @window_width, window_height: @window_height)
       Capybara.save_path = @screenshots_path
       Capybara.run_server = false
-      Capybara.register_driver :poltergeist do |app|
-        Capybara::Poltergeist::Driver.new(app,
-                                          js_errors: false, timeout: 60,
-                                          window_size: [@window_width, @window_height] )
-      end
-      Capybara.default_driver = :poltergeist
-      Capybara.ignore_hidden_elements = false
+      Capybara.default_driver = :headless_chrome
+      Capybara.ignore_hidden_elements = false # a workaround to extracting data from inactive tabs, dialogs, etc.
 
       @report = Reports::Simple.new
       @report.metadata[:screenshots_path] = @screenshots_path
@@ -45,11 +43,11 @@ module Crawler
       @host_name = uri.host
       @report.start(url: url)
       begin
-        signs_in_with(@username, @password) if @username
+        sign_in if ENV['username']
 
         crawl(url: url)
-      rescue error
-        @report.error = error
+      rescue => error
+        puts error.message
       ensure
         @report.finish
       end
@@ -80,7 +78,7 @@ module Crawler
     end
 
     def crawl(url:)
-      return "Skippd external #{url}." unless internal_url?(url)
+      return "Skipped external #{url}." unless internal_url?(url)
       return 'Limit reached' if limit_reached?
 
       uri = URI(url.to_s)
@@ -96,12 +94,12 @@ module Crawler
       screenshot_filename = save_screenshot if @screenshots_path
 
       page_links = get_page_links
+      puts "#{page_links.count} links found on the page."
       @report.record_page_visit(page: page_path,
                                 extracted_links: page_links,
                                 screenshot_filename: screenshot_filename)
       @report.pages[page_path] =
         {
-          status_code: status_code,
           extracted_links: page_links,
           screenshot: screenshot_filename
         }
