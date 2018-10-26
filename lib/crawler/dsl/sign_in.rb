@@ -1,29 +1,36 @@
 module Crawler
   module DSL
     module SignIn
-      def signs_in_with(username, password)
-        visit sign_in_path
-        fill_in user_field_selector, with: username
-        fill_in password_field_selector, with: password
-        find(signin_button_selector).click
+      def sign_in
+        visit '/'
+        pingfed_o365_login
       end
 
-      private
-
-      def sign_in_path
-        '/users/sign_in'
+      def pingfed_login(force: true)
+        if force || page.has_content?('Enter your credentials')
+          fill_in 'input_username', with: ENV.fetch('username')
+          fill_in 'input_password', with: ENV.fetch('password')
+          click_on 'Login'
+        end
       end
 
-      def user_field_selector
-        'user_username'
+      def o365_login(force: true)
+        if force || page.has_content?('Stay signed in?')
+          check 'DontShowAgain'
+          click_on 'Yes'
+        end
       end
 
-      def password_field_selector
-        'user_password'
+      def o365_stay_signed_in(force: true)
+        if force || page.has_content?('Stay signed in?')
+          check 'DontShowAgain'
+          click_on 'Yes'
+        end
       end
 
-      def signin_button_selector
-        '.button-signin'
+      def pingfed_o365_login(force: true)
+        pingfed_login(force: force)
+        o365_stay_signed_in(force: force)
       end
     end
   end

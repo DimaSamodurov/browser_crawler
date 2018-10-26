@@ -5,6 +5,7 @@ require "crawler"
 require "pry" if ENV['DEBUG'] == 'true'
 
 options = Crawler::Options.parse_args
+ENV.update(options.transform_keys(&:to_s).transform_values(&:to_s))
 
 if options[:screenshots_path]
   `mkdir -p #{options[:screenshots_path]}` unless File.directory?(options[:screenshots_path])
@@ -14,8 +15,6 @@ if options[:url]
   engine = Crawler::Engine.new(
     max_pages: options[:max_pages],
     save_screenshots_to: options[:screenshots_path],
-    username: options[:username],
-    password: options[:password],
     window_width: options[:window_width],
     window_height: options[:window_height])
 

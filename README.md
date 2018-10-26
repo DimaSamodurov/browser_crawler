@@ -43,20 +43,25 @@ crawl http://localhost:3000
 With authentication, screenshots and limiting visited page number to 1:
 ```
 crawl https://your.site.com/welcome -u username -p password -n 1 -s tmp/screenshots
+# or
+export username=dima
+export password=secret
+#... 
+crawl https://your.site.com/welcome -n 1 -s tmp/screenshots
 ```
 
 Generate index from the captured screenshots. Index is saved to `tmp/screenshots/index.html`.
 ```
-crawl -s tmp/screenshots
+bin/crawl -s tmp/screenshots
 ```
 
 see additional options with:
 
 ```
-crawl -h
+bin/crawl -h
 ```
 
-When finished the crawling report will be saved to `crawl_report.yml` file by default.
+When finished the crawling report will be saved to `tmp/crawl_report.yml` file by default.
 You can specify the file path using command line options.
 
 ### Usage with Wraith
@@ -70,7 +75,7 @@ crawl https://your.site.com/welcome -c wraith/configs/capture.yaml
 
 Or if you have crawling report available, just use it without the URL to skip crawling:
 ``` 
-bin/crawl -c wraith/configs/capture.yaml -r tmp/uat/crawl_report.yml
+bin/crawl -c tmp/wraith_config.yml -r tmp/crawl_report.yml
 ```
 
 ## Restrictions

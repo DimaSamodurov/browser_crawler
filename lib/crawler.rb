@@ -1,10 +1,4 @@
 require "crawler/version"
-
-require 'capybara'
-require 'capybara/poltergeist'
-require 'capybara-screenshot'
-require 'yaml'
-
 require 'crawler/options'
 require 'crawler/engine'
 

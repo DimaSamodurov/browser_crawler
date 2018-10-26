@@ -44,6 +44,7 @@ module Crawler
       @report.start(url: url)
       begin
         sign_in if ENV['username']
+        sleep 5
 
         crawl(url: url)
       rescue => error
@@ -89,7 +90,6 @@ module Crawler
       puts "Visiting #{page_path}"
 
       visit page_path
-      wait_for_page_to_load rescue nil
 
       screenshot_filename = save_screenshot if @screenshots_path
 

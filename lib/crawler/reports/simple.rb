@@ -23,7 +23,8 @@ module Crawler
     # }
 
     class Simple
-      attr_reader :pages, :metadata, :error
+      attr_reader :pages, :metadata
+      attr_accessor :error
 
       def initialize
         @pages = {}
