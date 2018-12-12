@@ -8,12 +8,12 @@ It can help maintaining e.g. lists of internal and external links,
 creating sitemaps, visual testing using screenshots  
 or prepare the list of urls for the more sophisticated tool like [Wraith](https://github.com/BBC-News/wraith). 
 
-Browser based crawling is performed with the help of [Capybara](https://github.com/teamcapybara/capybara) and [Poltergeist](https://github.com/teampoltergeist/poltergeist).
+Browser based crawling is performed with the help of [Capybara](https://github.com/teamcapybara/capybara) and Chrome.
 Javascript is executed before page is analyzed allowing to crawl dynamic content.
 Browser based crawling is essentially an alternative to Wraith's spider mode, 
-which parses html and has limitations to static content by that. 
+which parses only server side rendered html. 
 
-By default crawler visits the pages following the links extracted.
+By default crawler visits pages following the links extracted.
 No button clicks performed other than during the optional authentication step.
 Thus crawler does not perform any updates to the site and can be treated as noninvasive.
 
