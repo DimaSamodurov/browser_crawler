@@ -20,7 +20,7 @@ if options[:url]
 
   engine.extract_links(url: options[:url]) if options[:url]
 
-  File.write(options[:report], engine.report.to_yaml)
+  engine.report_save(path: options[:report])
 
   puts "Report is saved to #{options[:report]}."
   puts "Total pages visited: #{engine.visited_pages.count}."

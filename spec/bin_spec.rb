@@ -4,6 +4,7 @@ require 'rack'
 describe 'command line `crawl URL`' do
   let(:server) do
     app = lambda { |env| [200, {}, ["Hi there!"]] }
+    Capybara.server = :webrick
     Capybara::Server.new(app).boot
   end
 

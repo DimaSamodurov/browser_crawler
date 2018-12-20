@@ -5,13 +5,15 @@ require_relative 'dsl/sign_in'
 require_relative 'dsl/js_helpers'
 require_relative 'reports/simple'
 require_relative 'support/capybara'
-require 'pry'
 
 module Crawler
   class Engine
     include Capybara::DSL
     include DSL::SignIn
     include DSL::JsHelpers
+
+    REPORT_SAVE_PATH = 'tmp/crawl_report.yaml'.freeze
+    AVAILABLE_CALLBACK_METHODS = [:before_crawling, :after_crawling].freeze
 
     attr_reader :report
 
@@ -36,6 +38,18 @@ module Crawler
       @report.metadata[:window_height] = @window_height
     end
 
+    def js_before_run(javascript: '')
+      unless javascript.empty?
+        params = {
+          cmd: 'Page.addScriptToEvaluateOnNewDocument',
+          params: {
+            source: javascript
+          }
+        }
+        Capybara.current_session.driver.browser.send(:bridge).send_command(params)
+      end
+    end
+
     def extract_links(url:)
       uri = URI(url.to_s)
       Capybara.app_host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
@@ -43,16 +57,36 @@ module Crawler
       @host_name = uri.host
       @report.start(url: url)
       begin
-        sign_in if ENV['username']
-        sleep 5
+        before_crawling
 
         crawl(url: url)
+
+        after_crawling
       rescue => error
         puts error.message
       ensure
         @report.finish
       end
       self
+    end
+
+    def report_save(path: '')
+      save_path = path.empty? ? REPORT_SAVE_PATH : path
+      File.write(save_path, @report.to_yaml)
+    end
+
+    def before_crawling
+      sign_in if ENV['username']
+      sleep 5
+    end
+
+    def after_crawling
+    end
+
+    def overwrite_callback(method:, &block)
+      return unless AVAILABLE_CALLBACK_METHODS.include?(method)
+      return unless block_given?
+      define_singleton_method(method.to_sym, block)
     end
 
     def visited_pages
@@ -94,6 +128,7 @@ module Crawler
       screenshot_filename = save_screenshot if @screenshots_path
 
       page_links = get_page_links
+
       puts "#{page_links.count} links found on the page."
       @report.record_page_visit(page: page_path,
                                 extracted_links: page_links,
