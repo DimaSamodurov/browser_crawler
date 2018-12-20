@@ -6,8 +6,10 @@ require 'crawler/version'
 Gem::Specification.new do |spec|
   spec.name          = "crawler"
   spec.version       = Crawler::VERSION
+  spec.required_ruby_version = '>= 2.5.0'
   spec.authors       = ["Dmytro Samodurov"]
   spec.email         = ["dimasamodurov@gmail.com"]
+  spec.licenses      = ['MIT']
 
   spec.summary       = %q{Simple site crawler using Capybara and Phantomjs}
   spec.description   = %q{}
@@ -26,15 +28,15 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "capybara", "~> 2.10"
-  spec.add_dependency "capybara-screenshot"
-  spec.add_dependency "activesupport"
-  spec.add_dependency "chromedriver-helper", '~> 2.1'
-  spec.add_dependency "selenium-webdriver"
+  spec.add_dependency "capybara", '~> 3.12', '>= 3.12.0'
+  spec.add_dependency "capybara-screenshot", '~> 1.0', '>= 1.0.22'
+  spec.add_dependency "activesupport", '~> 5.2', '>= 5.2.2'
+  spec.add_dependency "chromedriver-helper", '~> 2.1', '>= 2.1.0'
+  spec.add_dependency "selenium-webdriver", '~> 3.141', '>= 3.141.0'
 
 
-  spec.add_development_dependency "bundler", "~> 1.12"
+  spec.add_development_dependency "bundler", "~> 1.17.2", '>= 1.17.2'
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
-  spec.add_development_dependency "pry-byebug"
+  spec.add_development_dependency "pry-byebug", "~> 3.5.1", '>= 3.5.1'
 end

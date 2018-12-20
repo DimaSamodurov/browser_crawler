@@ -8,6 +8,7 @@ module Capybara
   def register_chrome_driver(name, window_width: 1280, window_height: 1600)
     Capybara.register_driver name do |app|
       options = ::Selenium::WebDriver::Chrome::Options.new
+
       options.add_preference(:download, prompt_for_download: false,
                              default_directory: File.join(Dir.pwd, 'tmp', 'screenshots'))
 
