@@ -15,6 +15,8 @@ module Capybara
       options.add_preference(:browser, set_download_behavior: {behavior: 'allow'})
       options.add_argument('--headless')
       options.add_argument('--disable-gpu')
+      options.add_argument('--disable-extensions')
+      options.add_argument("--no-sandbox")
       options.add_argument("--window-size=#{window_width},#{window_height}")
 
       driver = ::Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
