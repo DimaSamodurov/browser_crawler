@@ -143,7 +143,7 @@ module Crawler
       @report.record_page_visit(page: visited_page_link,
                                 extracted_links: page_links,
                                 screenshot_filename: screenshot_filename)
-      @report.pages[page_path] =
+      @report.pages[visited_page_link] =
         {
           extracted_links: page_links,
           screenshot: screenshot_filename
@@ -156,8 +156,8 @@ module Crawler
         end
       end
     rescue => error
-      @report.record_page_visit(page: page_path, error: error.message)
-      puts "Error visiting #{page_path}: #{error.message}"
+      @report.record_page_visit(page: visited_page_link, error: error.message)
+      puts "Error visiting #{visited_page_link}: #{error.message}"
     end
   end
 end

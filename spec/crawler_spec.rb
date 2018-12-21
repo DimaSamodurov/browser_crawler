@@ -41,10 +41,12 @@ describe Crawler do
     crawler = Crawler::Engine.new(max_pages: 1)
     crawler.extract_links(url: url, only_path: false)
 
-    extracted_links = crawler.report.pages['/'][:extracted_links]
+    url, page_report = crawler.report.pages.first
+    extracted_links = page_report[:extracted_links]
 
     expect(extracted_links[0]).to match /page1.html/
     expect(extracted_links[0]).to match /http:\/\/127\.0\.0\.1/
+    expect(url).to match /http:\/\/127\.0\.0\.1/
   end
 
   it 'executes javascript before extracts links from the page' do
