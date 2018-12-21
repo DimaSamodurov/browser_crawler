@@ -126,12 +126,13 @@ module Crawler
 
       uri = URI(url.to_s)
       page_path = uri.path
+      visited_page_link = only_path ? page_path : full_url(uri)
 
-      return "Skipped visited #{page_path}." if visited_pages.include?(page_path)
+      return "Skipped visited #{visited_page_link}." if visited_pages.include?(visited_page_link)
 
-      puts "Visiting #{page_path}"
+      puts "Visiting #{visited_page_link}"
 
-      visit page_path
+      visit visited_page_link
 
       screenshot_filename = save_screenshot if @screenshots_path
 
@@ -139,7 +140,7 @@ module Crawler
 
       puts "#{page_links.count} links found on the page."
 
-      visited_page_link = only_path ? page_path : full_url(uri)
+
       @report.record_page_visit(page: visited_page_link,
                                 extracted_links: page_links,
                                 screenshot_filename: screenshot_filename)
