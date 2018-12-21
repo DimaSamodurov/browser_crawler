@@ -113,7 +113,7 @@ module Crawler
     end
 
     def full_url(uri)
-      if uri.port == 80
+      if uri.port == 80 || uri.port == 443
         "#{uri.scheme}://#{uri.host}#{uri.path}"
       else
         "#{uri.scheme}://#{uri.host}:#{uri.port}#{uri.path}"
