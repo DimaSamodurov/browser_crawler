@@ -50,7 +50,7 @@ module Crawler
       end
     end
 
-    def extract_links(url:)
+    def extract_links(url:, only_path: true)
       uri = URI(url.to_s)
       Capybara.app_host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
 
@@ -59,7 +59,7 @@ module Crawler
       begin
         before_crawling
 
-        crawl(url: url)
+        crawl(url: url, only_path: only_path)
 
         after_crawling
       rescue => error
@@ -112,7 +112,15 @@ module Crawler
       return visited_pages.count >= @max_pages
     end
 
-    def crawl(url:)
+    def full_url(uri)
+      if uri.port == 80
+        "#{uri.scheme}://#{uri.host}#{uri.path}"
+      else
+        "#{uri.scheme}://#{uri.host}:#{uri.port}#{uri.path}"
+      end
+    end
+
+    def crawl(url:, only_path:)
       return "Skipped external #{url}." unless internal_url?(url)
       return 'Limit reached' if limit_reached?
 
@@ -130,7 +138,9 @@ module Crawler
       page_links = get_page_links
 
       puts "#{page_links.count} links found on the page."
-      @report.record_page_visit(page: page_path,
+
+      visited_page_link = only_path ? page_path : full_url(uri)
+      @report.record_page_visit(page: visited_page_link,
                                 extracted_links: page_links,
                                 screenshot_filename: screenshot_filename)
       @report.pages[page_path] =
@@ -142,7 +152,7 @@ module Crawler
       unless limit_reached?
         page_links.each do |href|
           next unless internal_url?(href)
-          crawl(url: href)
+          crawl(url: href, only_path: only_path)
         end
       end
     rescue => error
