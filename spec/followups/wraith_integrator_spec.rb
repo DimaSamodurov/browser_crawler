@@ -22,14 +22,12 @@ pages:
     - http://localhost:3000/
 YAML
 
-      report = YAML.load(yml)
-
       expected = {
         '' => '/',
         'helpdesks' =>'/helpdesks'
       }
 
-      cfg = Crawler::Followups::WraithIntegrator.new(report: report)
+      cfg = Crawler::Followups::WraithIntegrator.new(report: yml)
       expect(cfg.paths).to eql expected
     end
   end
