@@ -37,52 +37,6 @@ describe Crawler do
     expect(extracted_links[2]).to match /page3.html/
   end
 
-  it 'executes javascript before extracts links from the page' do
-    javascript = %{
-    window.addEventListener("load", function(){
-      var e = document.body;
-      e.innerHTML = '';
-    });
-    }
-
-    crawler = Crawler::Engine.new(max_pages: 1)
-    crawler.js_before_run(javascript: javascript)
-    crawler.extract_links(url: url)
-
-    extracted_links = crawler.report.pages['/'][:extracted_links]
-
-    expect(extracted_links).to eq([])
-  end
-
-  it 'overwrites before_crawling callback method and executes it' do
-    crawler = Crawler::Engine.new(max_pages: 1)
-
-    crawler.overwrite_callback(method: :before_crawling) do
-      @report.record_page_visit(page: '/before_crawling', extracted_links: ['link1'])
-    end
-
-    crawler.extract_links(url: url)
-
-    extracted_links = crawler.report.pages['/before_crawling'][:extracted_links]
-
-    expect(extracted_links).to eq(['link1'])
-  end
-
-
-  it 'overwrites after_crawling callback method and executes it' do
-    crawler = Crawler::Engine.new(max_pages: 1)
-
-    crawler.overwrite_callback(method: :after_crawling) do
-      @report.record_page_visit(page: '/after_crawling', extracted_links: ['link1'])
-    end
-
-    crawler.extract_links(url: url)
-
-    extracted_links = crawler.report.pages['/after_crawling'][:extracted_links]
-
-    expect(extracted_links).to eq(['link1'])
-  end
-
   it 'visits internal pages' do
     crawler = Crawler::Engine.new
     crawler.extract_links(url: url)
@@ -95,6 +49,74 @@ describe Crawler do
       crawler = Crawler::Engine.new(max_pages: 2)
       crawler.extract_links(url: url)
       expect(crawler.report.visited_pages.count).to eql 2
+    end
+  end
+
+  context 'change Capybara driver' do
+    let(:app) do
+      fixture_path = File.expand_path('fixtures/static_site', __dir__)
+      Rack::Builder.app do
+        use Rack::Static, urls: {'/' => 'index.html'}, root: fixture_path
+        run Rack::File.new(fixture_path)
+      end
+    end
+
+    it 'executes javascript before extracts links from the page' do
+      Capybara.server = :webrick
+      Capybara::Server.new(app).boot
+      url = "http://#{server.host}:#{server.port}/"
+
+      javascript = %{
+    window.addEventListener("load", function(){
+      var e = document.body;
+      e.innerHTML = '';
+    });
+    }
+
+      crawler = Crawler::Engine.new(max_pages: 1)
+      crawler.js_before_run(javascript: javascript)
+      crawler.extract_links(url: url)
+
+      extracted_links = crawler.report.pages['/'][:extracted_links]
+
+      expect(extracted_links).to eq([])
+    end
+
+    it 'overwrites before_crawling callback method and executes it' do
+      Capybara.server = :webrick
+      Capybara::Server.new(app).boot
+      url = "http://#{server.host}:#{server.port}/"
+
+      crawler = Crawler::Engine.new(max_pages: 1)
+
+      crawler.overwrite_callback(method: :before_crawling) do
+        @report.record_page_visit(page: '/before_crawling', extracted_links: ['link1'])
+      end
+
+      crawler.extract_links(url: url)
+
+      extracted_links = crawler.report.pages['/before_crawling'][:extracted_links]
+
+      expect(extracted_links).to eq(['link1'])
+    end
+
+
+    it 'overwrites after_crawling callback method and executes it' do
+      Capybara.server = :webrick
+      Capybara::Server.new(app).boot
+      url = "http://#{server.host}:#{server.port}/"
+
+      crawler = Crawler::Engine.new(max_pages: 1)
+
+      crawler.overwrite_callback(method: :after_crawling) do
+        @report.record_page_visit(page: '/after_crawling', extracted_links: ['link1'])
+      end
+
+      crawler.extract_links(url: url)
+
+      extracted_links = crawler.report.pages['/after_crawling'][:extracted_links]
+
+      expect(extracted_links).to eq(['link1'])
     end
   end
 end

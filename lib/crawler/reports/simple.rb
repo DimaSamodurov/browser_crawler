@@ -26,9 +26,11 @@ module Crawler
       attr_reader :pages, :metadata
       attr_accessor :error
 
-      def initialize
-        @pages = {}
-        @metadata = {}
+      def initialize(pages: {}, metadata: {}, started_at: nil, finished_at: nil)
+        @pages = pages
+        @metadata = metadata
+        @started_at = started_at
+        @finished_at = finished_at
       end
 
       def start(url:)
@@ -39,6 +41,12 @@ module Crawler
 
       def finish
         @finished_at = Time.now
+      end
+
+      def to_h
+        {}.merge(@pages)
+          .merge(@metadata)
+          .merge({started_at: @started_at, finished_at: @finished_at})
       end
 
       def record_page_visit(page:, extracted_links: nil, screenshot_filename: nil, error: nil)

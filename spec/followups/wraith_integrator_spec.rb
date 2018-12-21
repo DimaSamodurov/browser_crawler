@@ -5,7 +5,7 @@ describe Crawler::Followups::WraithIntegrator do
   describe '#pages_list' do
     it 'extracts visited pages from the crawl_report.yml' do
       yml = <<-YAML
---- !ruby/object:Crawler::Reports::Simple
+---
 pages:
   "/":
     :status_code: 200
