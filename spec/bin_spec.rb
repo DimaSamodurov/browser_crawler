@@ -60,7 +60,7 @@ describe 'command line `crawl -s`' do
       let(:report_file) { File.join(tmp_dir, 'wraith_config.yml') }
       let(:report) do
         <<-YAML
---- !ruby/object:Crawler::Reports::Simple
+---
 pages:
   "/":
     :status_code: 200
@@ -103,8 +103,8 @@ paths:
         File.write(wraith_config_file, wraith_config)
       end
 
-      it 'update path: section of the wraith config file' do
-        `bin/crawl -c #{wraith_config_file}`
+      xit 'update path: section of the wraith config file' do
+        system("bin/crawl -c #{wraith_config_file}")
       end
     end
   end
