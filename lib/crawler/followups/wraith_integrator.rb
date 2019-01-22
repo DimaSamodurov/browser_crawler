@@ -8,9 +8,8 @@ module Crawler
         @report = if report.respond_to?(:pages)
                     report
                   else
-                    YAML.load(report)
+                    YAML.load(report).symbolize_keys
                   end
-
       end
 
       def update_config(wraith_config_file, path_suffix: nil)
@@ -26,7 +25,7 @@ module Crawler
       end
 
       def named_pages
-        @report.pages.inject({}) do |h, (page_url, links)|
+        @report[:pages].inject({}) do |h, (page_url, links)|
           page_path = URI(page_url.to_s).path
           page_name = page_path.parameterize
           h[page_name] = page_path

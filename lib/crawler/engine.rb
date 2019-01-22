@@ -72,7 +72,7 @@ module Crawler
 
     def report_save(path: '')
       save_path = path.empty? ? REPORT_SAVE_PATH : path
-      File.write(save_path, @report.to_yaml)
+      File.write(save_path, @report.to_h.to_yaml)
     end
 
     def before_crawling
