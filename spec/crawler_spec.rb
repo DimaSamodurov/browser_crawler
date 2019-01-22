@@ -1,3 +1,4 @@
+
 require 'spec_helper'
 require 'rack'
 
@@ -26,7 +27,7 @@ describe Crawler do
     expect(crawler.visited_pages.first).to eql '/page2.html'
   end
 
-  it 'extracts links from the page' do
+  it 'extracts links from the page with options only_path' do
     crawler = Crawler::Engine.new
     crawler.extract_links(url: url)
 
@@ -35,6 +36,18 @@ describe Crawler do
     expect(extracted_links[0]).to match /page1.html/
     expect(extracted_links[1]).to match /page2.html/
     expect(extracted_links[2]).to match /page3.html/
+  end
+
+  it 'extracts links from the page with' do
+    crawler = Crawler::Engine.new(max_pages: 1)
+    crawler.extract_links(url: url, only_path: false)
+
+    url, page_report = crawler.report.pages.first
+    extracted_links = page_report[:extracted_links]
+
+    expect(extracted_links[0]).to match /page1.html/
+    expect(extracted_links[0]).to match /http:\/\/127\.0\.0\.1/
+    expect(url).to match /http:\/\/127\.0\.0\.1/
   end
 
   it 'visits internal pages' do
@@ -67,11 +80,11 @@ describe Crawler do
       url = "http://#{server.host}:#{server.port}/"
 
       javascript = %{
-    window.addEventListener("load", function(){
-      var e = document.body;
-      e.innerHTML = '';
-    });
-    }
+                      window.addEventListener("load", function(){
+                        var e = document.body;
+                        e.innerHTML = '';
+                      });
+                    }
 
       crawler = Crawler::Engine.new(max_pages: 1)
       crawler.js_before_run(javascript: javascript)

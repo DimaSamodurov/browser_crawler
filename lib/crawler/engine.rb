@@ -50,7 +50,7 @@ module Crawler
       end
     end
 
-    def extract_links(url:)
+    def extract_links(url:, only_path: true)
       uri = URI(url.to_s)
       Capybara.app_host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
 
@@ -59,7 +59,7 @@ module Crawler
       begin
         before_crawling
 
-        crawl(url: url)
+        crawl(url: url, only_path: only_path)
 
         after_crawling
       rescue => error
@@ -112,28 +112,39 @@ module Crawler
       return visited_pages.count >= @max_pages
     end
 
-    def crawl(url:)
+    def full_url(uri)
+      if uri.port == 80 || uri.port == 443
+        "#{uri.scheme}://#{uri.host}#{uri.path}"
+      else
+        "#{uri.scheme}://#{uri.host}:#{uri.port}#{uri.path}"
+      end
+    end
+
+    def crawl(url:, only_path:)
       return "Skipped external #{url}." unless internal_url?(url)
       return 'Limit reached' if limit_reached?
 
       uri = URI(url.to_s)
       page_path = uri.path
+      visited_page_link = only_path ? page_path : full_url(uri)
 
-      return "Skipped visited #{page_path}." if visited_pages.include?(page_path)
+      return "Skipped visited #{visited_page_link}." if visited_pages.include?(visited_page_link)
 
-      puts "Visiting #{page_path}"
+      puts "Visiting #{visited_page_link}"
 
-      visit page_path
+      visit visited_page_link
 
       screenshot_filename = save_screenshot if @screenshots_path
 
       page_links = get_page_links
 
       puts "#{page_links.count} links found on the page."
-      @report.record_page_visit(page: page_path,
+
+
+      @report.record_page_visit(page: visited_page_link,
                                 extracted_links: page_links,
                                 screenshot_filename: screenshot_filename)
-      @report.pages[page_path] =
+      @report.pages[visited_page_link] =
         {
           extracted_links: page_links,
           screenshot: screenshot_filename
@@ -142,12 +153,12 @@ module Crawler
       unless limit_reached?
         page_links.each do |href|
           next unless internal_url?(href)
-          crawl(url: href)
+          crawl(url: href, only_path: only_path)
         end
       end
     rescue => error
-      @report.record_page_visit(page: page_path, error: error.message)
-      puts "Error visiting #{page_path}: #{error.message}"
+      @report.record_page_visit(page: visited_page_link, error: error.message)
+      puts "Error visiting #{visited_page_link}: #{error.message}"
     end
   end
 end
