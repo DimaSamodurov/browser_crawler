@@ -1,4 +1,3 @@
-
 require 'spec_helper'
 require 'rack'
 
@@ -93,43 +92,6 @@ describe Crawler do
       extracted_links = crawler.report.pages['/'][:extracted_links]
 
       expect(extracted_links).to eq([])
-    end
-
-    it 'overwrites before_crawling callback method and executes it' do
-      Capybara.server = :webrick
-      Capybara::Server.new(app).boot
-      url = "http://#{server.host}:#{server.port}/"
-
-      crawler = Crawler::Engine.new(max_pages: 1)
-
-      crawler.overwrite_callback(method: :before_crawling) do
-        @report.record_page_visit(page: '/before_crawling', extracted_links: ['link1'])
-      end
-
-      crawler.extract_links(url: url)
-
-      extracted_links = crawler.report.pages['/before_crawling'][:extracted_links]
-
-      expect(extracted_links).to eq(['link1'])
-    end
-
-
-    it 'overwrites after_crawling callback method and executes it' do
-      Capybara.server = :webrick
-      Capybara::Server.new(app).boot
-      url = "http://#{server.host}:#{server.port}/"
-
-      crawler = Crawler::Engine.new(max_pages: 1)
-
-      crawler.overwrite_callback(method: :after_crawling) do
-        @report.record_page_visit(page: '/after_crawling', extracted_links: ['link1'])
-      end
-
-      crawler.extract_links(url: url)
-
-      extracted_links = crawler.report.pages['/after_crawling'][:extracted_links]
-
-      expect(extracted_links).to eq(['link1'])
     end
   end
 end

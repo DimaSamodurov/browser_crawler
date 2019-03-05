@@ -44,7 +44,7 @@ module Crawler
       end
 
       def to_h
-        {}.merge(@pages)
+        {}.merge(pages: @pages)
           .merge(@metadata)
           .merge({started_at: @started_at, finished_at: @finished_at})
       end
