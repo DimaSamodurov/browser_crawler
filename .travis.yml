@@ -5,6 +5,8 @@ cache: bundler
 bundler_args: --without console
 script:
   - bundle exec rake spec
+addons:
+  chrome: stable
 rvm:
   - 2.3.8
   - 2.4.5
