@@ -6,7 +6,7 @@ require_relative 'dsl/js_helpers'
 require_relative 'reports/simple'
 require_relative 'support/capybara'
 
-module Crawler
+module BrowserCrawler
   class Engine
     include Capybara::DSL
     include DSL::SignIn

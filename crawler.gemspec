@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'crawler/version'
+require 'browser_crawler/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "crawler"
-  spec.version       = Crawler::VERSION
+  spec.name          = "browser_crawler"
+  spec.version       = BrowserCrawler::VERSION
   spec.required_ruby_version = '>= 2.5.0'
   spec.authors       = ["Dmytro Samodurov"]
   spec.email         = ["dimasamodurov@gmail.com"]
@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Simple site crawler using Capybara and Phantomjs}
   spec.description   = %q{}
-  spec.homepage      = "https://github.com/DimaSamodurov/crawler"
+  spec.homepage      = "https://github.com/DimaSamodurov/browser_crawler"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.

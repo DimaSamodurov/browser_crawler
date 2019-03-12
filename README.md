@@ -1,8 +1,8 @@
-# Crawler
+# Browser Crawler
 
-[![Build Status](https://travis-ci.org/DimaSamodurov/crawler.svg?branch=master)](https://travis-ci.org/DimaSamodurov/crawler)
+[![Build Status](https://travis-ci.org/DimaSamodurov/browser_crawler.svg?branch=master)](https://travis-ci.org/DimaSamodurov/browser_crawler)
 
-Crawler is aimed to visit pages available on the site and extract useful information.
+Browser Crawler is aimed to visit pages available on the site and extract useful information.
 
 It can help maintaining e.g. lists of internal and external links,
 creating sitemaps, visual testing using screenshots  
@@ -31,7 +31,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install crawler
+    $ gem install browser_crawler
 
 ## Usage
 
@@ -66,7 +66,7 @@ You can specify the file path using command line options.
 
 ### Usage with Wraith
 
-Crawler can be useful to update `paths:`  section of the wraith's configs.
+Browser Crawler can be useful to update `paths:`  section of the wraith's configs.
 
 Provided wraith config is placed to `wraith/configs/capture.yaml` file, do:
 ```
@@ -92,7 +92,7 @@ or in order to generate visual report (Wraith does it better).
 
 ### Integration with test frameworks
 
-By integrating crawler into the application test suite 
+By integrating browser_crawler into the application test suite 
 it would be possible accessing pages and content not easily accessible on real site.
 E.g. when performing data modifications.
 
@@ -109,7 +109,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/dimasamodurov/crawler.
+Bug reports and pull requests are welcome on GitHub at https://github.com/dimasamodurov/browser_crawler.
 
 ## License 
 

@@ -12,7 +12,7 @@ describe 'command line `crawl URL`' do
     "http://#{server.host}:#{server.port}/"
   end
 
-  report_file = Crawler::Options.default_options[:report]
+  report_file = BrowserCrawler::Options.default_options[:report]
 
   it "outputs report to '#{report_file}' by default" do
     `rm #{report_file}`
@@ -34,7 +34,7 @@ describe 'command line `crawl -s`' do
     "http://#{server.host}:#{server.port}/"
   end
 
-  report_file = Crawler::Options.default_options[:report]
+  report_file = BrowserCrawler::Options.default_options[:report]
 
   context 'standalone, when URL is not specified' do
     it "creates an html index from screenshots found in the folder." do

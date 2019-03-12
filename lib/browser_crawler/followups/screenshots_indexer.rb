@@ -1,5 +1,5 @@
 require 'erb'
-module Crawler
+module BrowserCrawler
   module Followups
     # Indexes screenshots captured by the crawler, creates index.html from the captured screenshots.
     # ERB Template can be provided that will receive the list of files.

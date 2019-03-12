@@ -1,6 +1,6 @@
 require 'optionparser'
 
-module Crawler
+module BrowserCrawler
   module Options
 
     module_function
