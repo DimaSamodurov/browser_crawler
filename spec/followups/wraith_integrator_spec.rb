@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'crawler/followups/wraith_integrator'
+require 'browser_crawler/followups/wraith_integrator'
 
-describe Crawler::Followups::WraithIntegrator do
+describe BrowserCrawler::Followups::WraithIntegrator do
   describe '#pages_list' do
     it 'extracts visited pages from the crawl_report.yml' do
       yml = <<-YAML
@@ -27,7 +27,7 @@ YAML
         'helpdesks' =>'/helpdesks'
       }
 
-      cfg = Crawler::Followups::WraithIntegrator.new(report: yml)
+      cfg = BrowserCrawler::Followups::WraithIntegrator.new(report: yml)
       expect(cfg.paths).to eql expected
     end
   end

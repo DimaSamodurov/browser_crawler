@@ -1,4 +1,4 @@
-module Crawler
+module BrowserCrawler
   module DSL
     module SignIn
       def sign_in

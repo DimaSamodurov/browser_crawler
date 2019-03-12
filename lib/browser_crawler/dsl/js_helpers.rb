@@ -1,4 +1,4 @@
-module Crawler
+module BrowserCrawler
   module DSL
     module JsHelpers
       def wait_for_page_to_load

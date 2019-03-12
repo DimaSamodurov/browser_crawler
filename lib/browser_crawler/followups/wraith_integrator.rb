@@ -1,6 +1,6 @@
 require 'yaml'
 require 'active_support/core_ext/string'
-module Crawler
+module BrowserCrawler
   module Followups
     # Updates the :paths section of the Wraith's config file.
     class WraithIntegrator

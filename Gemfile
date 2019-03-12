@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in crawler.gemspec
+# Specify your gem's dependencies in browser_crawler.gemspec
 gemspec

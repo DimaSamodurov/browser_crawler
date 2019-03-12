@@ -1,4 +1,4 @@
-module Crawler
+module BrowserCrawler
   module Reports
     # Value object that contains crawling results.
     # Example:
