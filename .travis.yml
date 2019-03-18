@@ -1,6 +1,29 @@
-sudo: false
 language: ruby
+
+dist: trusty
+
+sudo: required
+
+before_install:
+  - gem install bundler -v 1.17.2
+
+addons:
+  apt:
+    packages:
+      - google-chrome-stable
+
+before_script:
+  - whoami
+  - wget https://chromedriver.storage.googleapis.com/2.46/chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip
+  - sudo mv chromedriver /usr/bin/chromedriver
+  - sudo chown root:root /usr/bin/chromedriver
+  - sudo chmod +x /usr/bin/chromedriver
+  - sudo ln -s /usr/bin/chromedriver ~/bin/chromedriver
+  - chromedriver -v
+
+cache: bundler
+
 rvm:
-  - 2.3.0
-  - 2.6.1
-before_install: gem install bundler -v 1.12.5
+  - 2.5.3
+  - 2.6.2
