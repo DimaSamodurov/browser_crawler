@@ -7,7 +7,8 @@ module BrowserCrawler
 
     def default_options
       {
-        report: 'tmp/crawl_report.yml',
+        report_folder: 'tmp',
+        report_format: 'yaml',
         window_width: 1024,
         window_height: 768
       }
@@ -40,9 +41,14 @@ module BrowserCrawler
           options[:window_width], options[:window_height] = v.split('x')
         end
 
-        opts.on('-r', '--report FILE', 'The file path to save report to. '\
-                                         'Default: tmp/crawl_report.yml') do |v|
-          options[:report] = v
+        opts.on('-r', '--report FOLDER', 'The folder path to save report to. '\
+                                         'Default: tmp') do |v|
+          options[:report_folder] = v
+        end
+
+        opts.on('-f', '--report_format TYPE', 'The report type to save result  '\
+                                         'Default: yaml') do |v|
+          options[:report_format] = v
         end
 
         opts.on('-s', '--screenshots_path PATH',

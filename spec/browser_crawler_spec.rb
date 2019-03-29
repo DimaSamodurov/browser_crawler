@@ -30,7 +30,7 @@ describe BrowserCrawler do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: url)
 
-    extracted_links = crawler.report.pages['/'][:extracted_links]
+    extracted_links = crawler.report_store.pages['/'][:extracted_links]
 
     expect(extracted_links[0]).to match /page1.html/
     expect(extracted_links[1]).to match /page2.html/
@@ -41,7 +41,7 @@ describe BrowserCrawler do
     crawler = BrowserCrawler::Engine.new(max_pages: 1)
     crawler.extract_links(url: url, only_path: false)
 
-    url, page_report = crawler.report.pages.first
+    url, page_report = crawler.report_store.pages.first
     extracted_links = page_report[:extracted_links]
 
     expect(extracted_links[0]).to match /page1.html/
@@ -53,14 +53,14 @@ describe BrowserCrawler do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: url)
     internal_pages = %w[/ /page1.html /page11.html /page12.html /page2.html /page21.html]
-    expect(internal_pages - crawler.report.visited_pages).to be_empty
+    expect(internal_pages - crawler.report_store.visited_pages).to be_empty
   end
 
   describe 'with max_pages option specified' do
     it 'extracts visits not more than specified number of pages' do
       crawler = BrowserCrawler::Engine.new(max_pages: 2)
       crawler.extract_links(url: url)
-      expect(crawler.report.visited_pages.count).to eql 2
+      expect(crawler.report_store.visited_pages.count).to eql 2
     end
   end
 
@@ -89,7 +89,7 @@ describe BrowserCrawler do
       crawler.js_before_run(javascript: javascript)
       crawler.extract_links(url: url)
 
-      extracted_links = crawler.report.pages['/'][:extracted_links]
+      extracted_links = crawler.report_store.pages['/'][:extracted_links]
 
       expect(extracted_links).to eq([])
     end
@@ -102,12 +102,12 @@ describe BrowserCrawler do
       crawler = BrowserCrawler::Engine.new(max_pages: 1)
 
       crawler.overwrite_callback(method: :before_crawling) do
-        @report.record_page_visit(page: '/before_crawling', extracted_links: ['link1'])
+        @report_store.record_page_visit(page: '/before_crawling', extracted_links: ['link1'])
       end
 
       crawler.extract_links(url: url)
 
-      extracted_links = crawler.report.pages['/before_crawling'][:extracted_links]
+      extracted_links = crawler.report_store.pages['/before_crawling'][:extracted_links]
 
       expect(extracted_links).to eq(['link1'])
     end
@@ -121,12 +121,12 @@ describe BrowserCrawler do
       crawler = BrowserCrawler::Engine.new(max_pages: 1)
 
       crawler.overwrite_callback(method: :after_crawling) do
-        @report.record_page_visit(page: '/after_crawling', extracted_links: ['link1'])
+        @report_store.record_page_visit(page: '/after_crawling', extracted_links: ['link1'])
       end
 
       crawler.extract_links(url: url)
 
-      extracted_links = crawler.report.pages['/after_crawling'][:extracted_links]
+      extracted_links = crawler.report_store.pages['/after_crawling'][:extracted_links]
 
       expect(extracted_links).to eq(['link1'])
     end

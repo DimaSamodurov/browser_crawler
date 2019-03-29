@@ -15,14 +15,15 @@ module BrowserCrawler
     #         screenshot: 'file2.png',
     #         error: 'Invalid URI',
     #         extracted_links: nil
-    #       },
-    #     metadata: {
-    #       custom_attribute: 'Sample report title'
-    #     }
+    #       }
+    #   },
+    #   metadata: {
+    #     custom_attribute: 'Sample report title'
     #   }
     # }
 
-    class Simple
+    # It involves methods which allow to save data to a store structure
+    class Store
       attr_reader :pages, :metadata
       attr_accessor :error
 
@@ -46,10 +47,13 @@ module BrowserCrawler
       def to_h
         {}.merge(pages: @pages)
           .merge(@metadata)
-          .merge({started_at: @started_at, finished_at: @finished_at})
+          .merge(started_at: @started_at, finished_at: @finished_at)
       end
 
-      def record_page_visit(page:, extracted_links: nil, screenshot_filename: nil, error: nil)
+      def record_page_visit(page:,
+                            extracted_links: nil,
+                            screenshot_filename: nil,
+                            error: nil)
         @pages[page] = {
           screenshot: screenshot_filename,
           error: error,

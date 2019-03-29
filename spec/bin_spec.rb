@@ -12,15 +12,24 @@ describe 'command line `crawl URL`' do
     "http://#{server.host}:#{server.port}/"
   end
 
-  report_file = BrowserCrawler::Options.default_options[:report]
+  report_folder = BrowserCrawler::Options.default_options[:report_folder]
 
-  it "outputs report to '#{report_file}' by default" do
-    `rm #{report_file}`
-    expect(File.exists?(report_file)).to be_falsey
+  it "outputs report to '#{report_folder}' by default and save to yaml by default" do
+    `rm -rf #{report_folder}`
+    expect(File.exists?("#{report_folder}/crawler_report.yaml")).to be_falsey
 
     `bin/crawl #{url}`
 
-    expect(File.exists?(report_file)).to be_truthy
+    expect(File.exists?("#{report_folder}/crawler_report.yaml")).to be_truthy
+  end
+
+  it "outputs report to '#{report_folder}' by default and save to csv file" do
+    `rm -rf #{report_folder}`
+    expect(File.exists?("#{report_folder}/crawler_report.csv")).to be_falsey
+
+    `bin/crawl #{url} -f csv`
+
+    expect(File.exists?("#{report_folder}/crawler_report.csv")).to be_truthy
   end
 end
 
@@ -34,7 +43,7 @@ describe 'command line `crawl -s`' do
     "http://#{server.host}:#{server.port}/"
   end
 
-  report_file = BrowserCrawler::Options.default_options[:report]
+  report_folder = BrowserCrawler::Options.default_options[:report_folder]
 
   context 'standalone, when URL is not specified' do
     it "creates an html index from screenshots found in the folder." do

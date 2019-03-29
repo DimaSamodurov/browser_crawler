@@ -34,9 +34,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "chromedriver-helper", '~> 2.1', '>= 2.1.0'
   spec.add_dependency "selenium-webdriver", '~> 3.141', '>= 3.141.0'
 
-
   spec.add_development_dependency "bundler", "~> 1.17.2", '>= 1.17.2'
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
-  spec.add_development_dependency "pry-byebug", "~> 3.5.1", '>= 3.5.1'
+  spec.add_development_dependency "pry-byebug", "~> 3.6", '>= 3.6'
+  spec.add_development_dependency 'rubocop', '~> 0.66'
 end
