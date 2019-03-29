@@ -3,7 +3,8 @@ require 'capybara-screenshot'
 
 require_relative 'dsl/sign_in'
 require_relative 'dsl/js_helpers'
-require_relative 'reports/simple'
+require_relative 'report_factory'
+require_relative 'reports/store'
 require_relative 'support/capybara'
 
 module BrowserCrawler
@@ -12,10 +13,10 @@ module BrowserCrawler
     include DSL::SignIn
     include DSL::JsHelpers
 
-    REPORT_SAVE_PATH = 'tmp/crawl_report.yaml'.freeze
+    REPORT_SAVE_FOLDER_PATH = 'tmp'.freeze
     AVAILABLE_CALLBACK_METHODS = [:before_crawling, :after_crawling].freeze
 
-    attr_reader :report
+    attr_reader :report_store
 
     def initialize(save_screenshots_to: nil, max_pages: nil,
                    window_width: 1280, window_height: 1600)
@@ -32,10 +33,10 @@ module BrowserCrawler
       Capybara.default_driver = :headless_chrome
       Capybara.ignore_hidden_elements = false # a workaround to extracting data from inactive tabs, dialogs, etc.
 
-      @report = Reports::Simple.new
-      @report.metadata[:screenshots_path] = @screenshots_path
-      @report.metadata[:window_width] = @window_width
-      @report.metadata[:window_height] = @window_height
+       @report_store = Reports::Store.new
+       @report_store.metadata[:screenshots_path] = @screenshots_path
+       @report_store.metadata[:window_width] = @window_width
+       @report_store.metadata[:window_height] = @window_height
     end
 
     def js_before_run(javascript: '')
@@ -55,7 +56,7 @@ module BrowserCrawler
       Capybara.app_host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
 
       @host_name = uri.host
-      @report.start(url: url)
+      @report_store.start(url: url)
       begin
         before_crawling
 
@@ -65,14 +66,14 @@ module BrowserCrawler
       rescue => error
         puts error.message
       ensure
-        @report.finish
+        @report_store.finish
       end
       self
     end
 
-    def report_save(path: '')
-      save_path = path.empty? ? REPORT_SAVE_PATH : path
-      File.write(save_path, @report.to_h.to_yaml)
+    def report_save(folder_path: '', type: :yaml)
+      save_folder_path = folder_path.empty? ? REPORT_SAVE_PATH : folder_path
+      ReportFactory.save(store: @report_store, type: type.to_sym, save_folder_path: save_folder_path)
     end
 
     def before_crawling
@@ -90,14 +91,14 @@ module BrowserCrawler
     end
 
     def visited_pages
-      @report.visited_pages
+      @report_store.visited_pages
     end
 
     private
 
     def get_page_links
       page.all('a').map do |a|
-        href = a['href']
+        a['href']
       end
     end
 
@@ -109,7 +110,7 @@ module BrowserCrawler
 
     def limit_reached?
       return false if @max_pages == 0
-      return visited_pages.count >= @max_pages
+      visited_pages.count >= @max_pages
     end
 
     def full_url(uri)
@@ -141,14 +142,13 @@ module BrowserCrawler
       puts "#{page_links.count} links found on the page."
 
 
-      @report.record_page_visit(page: visited_page_link,
+      @report_store.record_page_visit(page: visited_page_link,
                                 extracted_links: page_links,
                                 screenshot_filename: screenshot_filename)
-      @report.pages[visited_page_link] =
-        {
+      @report_store.pages[visited_page_link] = {
           extracted_links: page_links,
           screenshot: screenshot_filename
-        }
+      }
 
       unless limit_reached?
         page_links.each do |href|
@@ -157,7 +157,7 @@ module BrowserCrawler
         end
       end
     rescue => error
-      @report.record_page_visit(page: visited_page_link, error: error.message)
+      @report_store.record_page_visit(page: visited_page_link, error: error.message)
       puts "Error visiting #{visited_page_link}: #{error.message}"
     end
   end

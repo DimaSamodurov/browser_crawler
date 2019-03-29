@@ -1,14 +1,20 @@
 #!/usr/bin/env ruby
 
-require "bundler/setup"
-require "browser_crawler"
+require 'bundler/setup'
+require 'browser_crawler'
 require "pry" if ENV['DEBUG'] == 'true'
 
 options = BrowserCrawler::Options.parse_args
 ENV.update(options.transform_keys(&:to_s).transform_values(&:to_s))
 
-if options[:screenshots_path]
-  `mkdir -p #{options[:screenshots_path]}` unless File.directory?(options[:screenshots_path])
+if options[:screenshots_path] && !File.directory?(options[:screenshots_path])
+  `mkdir -p #{options[:screenshots_path]}`
+end
+
+if options[:report_format] && !%w[yaml csv].include?(options[:report_format])
+  puts("Report format #{options[:report_format]} is not recognized." \
+           " Please choose the correct format from the list of available formats: 'csv', 'yaml'")
+  return
 end
 
 if options[:url]
@@ -16,24 +22,28 @@ if options[:url]
     max_pages: options[:max_pages],
     save_screenshots_to: options[:screenshots_path],
     window_width: options[:window_width],
-    window_height: options[:window_height])
+    window_height: options[:window_height]
+  )
 
   engine.extract_links(url: options[:url]) if options[:url]
 
-  engine.report_save(path: options[:report])
+  engine.report_save(folder_path: options[:report_folder],
+                     type: options[:report_format])
 
-  puts "Report is saved to #{options[:report]}."
+  puts "Report is saved to #{options[:report_folder]} as #{options[:report_format]} file."
   puts "Total pages visited: #{engine.visited_pages.count}."
 end
 
 if options[:screenshots_path]
   template = File.read(options[:index_template]) if options[:index_template]
-  indexer = BrowserCrawler::Followups::ScreenshotsIndexer.new(template: template)
+  indexer = BrowserCrawler::Followups::ScreenshotsIndexer
+            .new(template: template)
   file = indexer.index_directory(options[:screenshots_path])
   puts "Screenshots index is saved to '#{file}'."
 end
 
 if options[:wraith_config]
-  followup = BrowserCrawler::Followups::WraithIntegrator.new(report: File.read(options[:report]))
+  followup = BrowserCrawler::Followups::WraithIntegrator
+             .new(report: File.read("#{options[:report_folder]}/crawler_report.yaml"))
   followup.update_config(options[:wraith_config], path_suffix: '?wraith')
 end
