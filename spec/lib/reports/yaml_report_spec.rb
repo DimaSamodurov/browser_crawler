@@ -41,7 +41,8 @@ describe BrowserCrawler::Reports::YamlReport do
             }
           },
           finished_at: nil,
-          started_at: nil
+          started_at: nil,
+          unrecognized_links: []
         )
       end
     end

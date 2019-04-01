@@ -2,3 +2,5 @@ Metrics/BlockLength:
   Exclude:
     - 'browser_crawler.gemspec'
     - 'spec/**/*'
+Metrics/LineLength:
+  Max: 100
