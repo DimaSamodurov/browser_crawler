@@ -15,6 +15,9 @@ describe BrowserCrawler::Reports::CsvReport do
                                                        '/',
                                                        '/login'
                                                      ]
+                                                   },
+                                                   '/fail': {
+                                                     extracted_links: nil
                                                    }
                                                  }, metadata: {})
 
