@@ -64,6 +64,16 @@ describe BrowserCrawler do
     end
   end
 
+  it 'skips visit to the page if an url is not recognized' do
+    crawler = BrowserCrawler::Engine.new
+    crawler.extract_links(url: "#{url}page4.html")
+
+    expect(crawler.visited_pages).to eql ['/page4.html']
+    unrecognized_links = crawler.report_store.unrecognized_links
+    expect(unrecognized_links.include?('javascript://:')).to be true
+    expect(unrecognized_links.include?('mailto:example@com')).to be true
+  end
+
   context 'change Capybara driver' do
     let(:app) do
       fixture_path = File.expand_path('fixtures/static_site', __dir__)

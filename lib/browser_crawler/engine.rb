@@ -14,7 +14,7 @@ module BrowserCrawler
     include DSL::JsHelpers
 
     REPORT_SAVE_FOLDER_PATH = 'tmp'.freeze
-    AVAILABLE_CALLBACK_METHODS = [:before_crawling, :after_crawling].freeze
+    AVAILABLE_CALLBACK_METHODS = %i[before_crawling after_crawling].freeze
 
     attr_reader :report_store
 
@@ -33,10 +33,10 @@ module BrowserCrawler
       Capybara.default_driver = :headless_chrome
       Capybara.ignore_hidden_elements = false # a workaround to extracting data from inactive tabs, dialogs, etc.
 
-       @report_store = Reports::Store.new
-       @report_store.metadata[:screenshots_path] = @screenshots_path
-       @report_store.metadata[:window_width] = @window_width
-       @report_store.metadata[:window_height] = @window_height
+      @report_store = Reports::Store.new
+      @report_store.metadata[:screenshots_path] = @screenshots_path
+      @report_store.metadata[:window_width] = @window_width
+      @report_store.metadata[:window_height] = @window_height
     end
 
     def js_before_run(javascript: '')
@@ -63,7 +63,7 @@ module BrowserCrawler
         crawl(url: url, only_path: only_path)
 
         after_crawling
-      rescue => error
+      rescue StandardError => error
         puts error.message
       ensure
         @report_store.finish
@@ -72,7 +72,7 @@ module BrowserCrawler
     end
 
     def report_save(folder_path: '', type: :yaml)
-      save_folder_path = folder_path.empty? ? REPORT_SAVE_PATH : folder_path
+      save_folder_path = folder_path.empty? ? REPORT_SAVE_FOLDER_PATH : folder_path
       ReportFactory.save(store: @report_store, type: type.to_sym, save_folder_path: save_folder_path)
     end
 
@@ -81,12 +81,12 @@ module BrowserCrawler
       sleep 5
     end
 
-    def after_crawling
-    end
+    def after_crawling; end
 
     def overwrite_callback(method:, &block)
       return unless AVAILABLE_CALLBACK_METHODS.include?(method)
       return unless block_given?
+
       define_singleton_method(method.to_sym, block)
     end
 
@@ -105,11 +105,13 @@ module BrowserCrawler
     def internal_url?(url)
       uri = URI(url.to_s)
       return true if uri.host.nil? || uri.host == @host_name
+
       false
     end
 
     def limit_reached?
-      return false if @max_pages == 0
+      return false if @max_pages.zero?
+
       visited_pages.count >= @max_pages
     end
 
@@ -121,15 +123,32 @@ module BrowserCrawler
       end
     end
 
+    def skip_visit?(visited_page_link, uri)
+      visited_pages.include?(visited_page_link) ||
+        uri.host.nil? ||
+        uri.scheme.nil?
+    end
+
     def crawl(url:, only_path:)
-      return "Skipped external #{url}." unless internal_url?(url)
-      return 'Limit reached' if limit_reached?
+      puts("Skipped external #{url}.") && return unless internal_url?(url)
+      puts('Limit reached') && return if limit_reached?
 
-      uri = URI(url.to_s)
-      page_path = uri.path
-      visited_page_link = only_path ? page_path : full_url(uri)
+      begin
+        uri = URI(url.to_s)
+        page_path = uri.path
+        visited_page_link = only_path ? page_path : full_url(uri)
+      rescue URI::InvalidURIError => error
+        @report_store.record_unrecognized_link(url.to_s)
+        puts "Skipped visited #{url}" \
+             " because following error raised #{error.message}"
+        return
+      end
 
-      return "Skipped visited #{visited_page_link}." if visited_pages.include?(visited_page_link)
+      if skip_visit?(visited_page_link, uri)
+        @report_store.record_unrecognized_link(url.to_s)
+        puts "Skipped visited #{url}."
+        return
+      end
 
       puts "Visiting #{visited_page_link}"
 
@@ -141,22 +160,23 @@ module BrowserCrawler
 
       puts "#{page_links.count} links found on the page."
 
-
       @report_store.record_page_visit(page: visited_page_link,
-                                extracted_links: page_links,
-                                screenshot_filename: screenshot_filename)
+                                      extracted_links: page_links,
+                                      screenshot_filename: screenshot_filename)
       @report_store.pages[visited_page_link] = {
-          extracted_links: page_links,
-          screenshot: screenshot_filename
+        extracted_links: page_links,
+        screenshot: screenshot_filename
       }
 
       unless limit_reached?
         page_links.each do |href|
           next unless internal_url?(href)
+
           crawl(url: href, only_path: only_path)
+          break if limit_reached?
         end
       end
-    rescue => error
+    rescue StandardError => error
       @report_store.record_page_visit(page: visited_page_link, error: error.message)
       puts "Error visiting #{visited_page_link}: #{error.message}"
     end

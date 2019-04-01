@@ -19,12 +19,15 @@ module BrowserCrawler
     #   },
     #   metadata: {
     #     custom_attribute: 'Sample report title'
-    #   }
+    #   },
+    #   unrecognized_links: ['mailto://', 'javascript://'],
+    #   started_at: 12345,
+    #   finished_at: 123456
     # }
 
     # It involves methods which allow to save data to a store structure
     class Store
-      attr_reader :pages, :metadata
+      attr_reader :pages, :metadata, :unrecognized_links
       attr_accessor :error
 
       def initialize(pages: {}, metadata: {}, started_at: nil, finished_at: nil)
@@ -32,6 +35,7 @@ module BrowserCrawler
         @metadata = metadata
         @started_at = started_at
         @finished_at = finished_at
+        @unrecognized_links = []
       end
 
       def start(url:)
@@ -47,7 +51,15 @@ module BrowserCrawler
       def to_h
         {}.merge(pages: @pages)
           .merge(@metadata)
-          .merge(started_at: @started_at, finished_at: @finished_at)
+          .merge(
+            unrecognized_links: @unrecognized_links,
+            started_at: @started_at,
+            finished_at: @finished_at
+          )
+      end
+
+      def record_unrecognized_link(link)
+        @unrecognized_links << link unless @unrecognized_links.include?(link)
       end
 
       def record_page_visit(page:,
