@@ -102,7 +102,7 @@ module BrowserCrawler
 
     def remove_blank_links(links)
       links.reject do |link|
-        link.nil? || link == ''
+        link.nil? || link.empty?
       end
     end
 
