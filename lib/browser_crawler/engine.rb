@@ -18,7 +18,7 @@ module BrowserCrawler
     REPORT_SAVE_FOLDER_PATH = 'tmp'.freeze
     AVAILABLE_CALLBACK_METHODS = %i[before_crawling
                                     after_crawling
-                                    before_scan_page].freeze
+                                    before_page_scan].freeze
 
     attr_reader :report_store
 
@@ -87,7 +87,7 @@ module BrowserCrawler
 
     def after_crawling; end
 
-    def before_scan_page; end
+    def before_page_scan; end
 
     def overwrite_callback(method:, &block)
       unless AVAILABLE_CALLBACK_METHODS.include?(method)
@@ -163,7 +163,7 @@ module BrowserCrawler
 
       visit visited_page_link
 
-      before_scan_page
+      before_page_scan
 
       screenshot_filename = save_screenshot if @screenshots_path
 

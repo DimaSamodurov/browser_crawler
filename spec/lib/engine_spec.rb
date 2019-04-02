@@ -31,7 +31,7 @@ describe BrowserCrawler::Engine do
       exist_methods = BrowserCrawler::Engine::AVAILABLE_CALLBACK_METHODS
       expect(exist_methods).to eq(%i[before_crawling
                                      after_crawling
-                                     before_scan_page])
+                                     before_page_scan])
     end
 
     it 'raises error when overwrote unavailable callback method' do
