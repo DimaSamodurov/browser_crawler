@@ -13,8 +13,12 @@ module BrowserCrawler
     include DSL::SignIn
     include DSL::JsHelpers
 
+    class UnavailableCallBackMethod < StandardError; end
+
     REPORT_SAVE_FOLDER_PATH = 'tmp'.freeze
-    AVAILABLE_CALLBACK_METHODS = %i[before_crawling after_crawling].freeze
+    AVAILABLE_CALLBACK_METHODS = %i[before_crawling
+                                    after_crawling
+                                    before_scan_page].freeze
 
     attr_reader :report_store
 
@@ -83,8 +87,13 @@ module BrowserCrawler
 
     def after_crawling; end
 
+    def before_scan_page; end
+
     def overwrite_callback(method:, &block)
-      return unless AVAILABLE_CALLBACK_METHODS.include?(method)
+      unless AVAILABLE_CALLBACK_METHODS.include?(method)
+        raise UnavailableCallBackMethod.new('Overwrite unavailable' \
+                                            " callback method: #{method}")
+      end
       return unless block_given?
 
       define_singleton_method(method.to_sym, block)
@@ -153,6 +162,8 @@ module BrowserCrawler
       puts "Visiting #{visited_page_link}"
 
       visit visited_page_link
+
+      before_scan_page
 
       screenshot_filename = save_screenshot if @screenshots_path
 
