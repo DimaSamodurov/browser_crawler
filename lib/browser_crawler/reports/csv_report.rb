@@ -13,6 +13,11 @@ module BrowserCrawler
           csv << ['pages', 'extracted links']
 
           @store.pages.each do |page, crawler_result|
+            if crawler_result[:extracted_links].nil?
+              csv << [page, nil]
+              next
+            end
+
             crawler_result[:extracted_links].each do |link|
               csv << [page, link]
             end

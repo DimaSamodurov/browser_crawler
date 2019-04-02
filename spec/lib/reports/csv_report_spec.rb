@@ -15,6 +15,9 @@ describe BrowserCrawler::Reports::CsvReport do
                                                        '/',
                                                        '/login'
                                                      ]
+                                                   },
+                                                   '/blank': {
+                                                     extracted_links: nil
                                                    }
                                                  }, metadata: {})
 
@@ -33,7 +36,8 @@ describe BrowserCrawler::Reports::CsvReport do
                                   ['/', '/help'],
                                   ['/', '/search'],
                                   ['/home', '/'],
-                                  ['/home', '/login']])
+                                  ['/home', '/login'],
+                                  ['/blank', nil]])
       end
     end
   end
