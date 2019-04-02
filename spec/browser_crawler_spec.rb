@@ -74,6 +74,15 @@ describe BrowserCrawler do
     expect(unrecognized_links.include?('mailto:example@com')).to be true
   end
 
+  it 'excludes empty links from report' do
+    crawler = BrowserCrawler::Engine.new
+    crawler.extract_links(url: "#{url}page5.html")
+
+    extracted_links = crawler.report_store
+                             .pages['/page5.html'][:extracted_links]
+    expect(extracted_links).to eql []
+  end
+
   context 'change Capybara driver' do
     let(:app) do
       fixture_path = File.expand_path('fixtures/static_site', __dir__)
