@@ -97,8 +97,12 @@ module BrowserCrawler
     private
 
     def get_page_links
-      page.all('a').map do |a|
-        a['href']
+      remove_blank_links(page.all('a').map { |a| a['href']})
+    end
+
+    def remove_blank_links(links)
+      links.reject do |link|
+        link.nil? || link.empty?
       end
     end
 
