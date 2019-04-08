@@ -56,7 +56,7 @@ module BrowserCrawler
     end
 
     def extract_links(url:, only_path: true)
-      uri = URI(url.to_s)
+      uri = uri!(url: url)
       Capybara.app_host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
 
       @host_name = uri.host
@@ -116,8 +116,8 @@ module BrowserCrawler
     end
 
     def internal_url?(url)
-      uri = URI(url.to_s)
-      return true if uri.host.nil? || uri.host == @host_name
+      uri = uri(url: url)
+      return true if uri.nil? || uri.host.nil? || uri.host == @host_name
 
       false
     end
@@ -142,20 +142,33 @@ module BrowserCrawler
         uri.scheme.nil?
     end
 
+    def uri!(url:)
+      URI(url.to_s)
+    rescue URI::InvalidURIError => error
+      @report_store.record_unrecognized_link(url.to_s)
+      puts "Skipped visited #{url}" \
+           " because following error raised #{error.message}"
+      raise error
+    end
+
+    def uri(url:)
+      uri!(url: url)
+    rescue URI::InvalidURIError
+      return
+    end
+
     def crawl(url:, only_path:)
       puts("Skipped external #{url}.") && return unless internal_url?(url)
       puts('Limit reached') && return if limit_reached?
 
       begin
-        uri = URI(url.to_s)
-        page_path = uri.path
-        visited_page_link = only_path ? page_path : full_url(uri)
-      rescue URI::InvalidURIError => error
-        @report_store.record_unrecognized_link(url.to_s)
-        puts "Skipped visited #{url}" \
-             " because following error raised #{error.message}"
+        uri = uri!(url: url)
+      rescue URI::InvalidURIError
         return
       end
+
+      page_path = uri.path
+      visited_page_link = only_path ? page_path : full_url(uri)
 
       if skip_visit?(visited_page_link, uri)
         @report_store.record_unrecognized_link(url.to_s)
