@@ -7,9 +7,9 @@ describe BrowserCrawler do
   end
 
   let(:server) do
-    fixture_path = File.expand_path('fixtures/static_site', __dir__)
-    app = Rack::Builder.app do
-      use Rack::Static, urls: {'/' => 'index.html'}, root: fixture_path
+    fixture_path    = File.expand_path('fixtures/static_site', __dir__)
+    app             = Rack::Builder.app do
+      use Rack::Static, urls: { '/' => 'index.html' }, root: fixture_path
       run Rack::File.new(fixture_path)
     end
     Capybara.server = :webrick
@@ -42,7 +42,7 @@ describe BrowserCrawler do
     crawler.extract_links(url: url, only_path: false)
 
     url, page_report = crawler.report_store.pages.first
-    extracted_links = page_report[:extracted_links]
+    extracted_links  = page_report[:extracted_links]
 
     expect(extracted_links[0]).to match /page1.html/
     expect(extracted_links[0]).to match /http:\/\/127\.0\.0\.1/
@@ -79,15 +79,45 @@ describe BrowserCrawler do
     crawler.extract_links(url: "#{url}page5.html")
 
     extracted_links = crawler.report_store
-                             .pages['/page5.html'][:extracted_links]
+                        .pages['/page5.html'][:extracted_links]
     expect(extracted_links).to eql []
+  end
+
+  it 'checks that screenshot was saved' do
+    Dir.mktmpdir do |folder_path|
+      crawler = BrowserCrawler::Engine.new(screenshots_options: {
+        save_screenshots_to: folder_path
+      })
+      crawler.extract_links(url: "#{url}page5.html")
+
+      expect(Dir["#{folder_path}/*/*"][0]).to match(/page5\.html\.png/)
+      report_screenshot = crawler.report_store.pages['/page5.html'][:screenshot]
+      expect(report_screenshot).to match(/page5\.html\.png/)
+    end
+  end
+
+  it 'checks that store consists of full information about visited pages' do
+    crawler = BrowserCrawler::Engine.new
+    crawler.extract_links(url: "#{url}page6.html")
+
+    expect(crawler.report_store.pages['/page9999.html'])
+      .to eq(
+            {
+              code:            404,
+              error:           nil,
+              external:        false,
+              extracted_links: [],
+              links_found:     0,
+              screenshot:      nil
+            }
+          )
   end
 
   context 'change Capybara driver' do
     let(:app) do
       fixture_path = File.expand_path('fixtures/static_site', __dir__)
       Rack::Builder.app do
-        use Rack::Static, urls: {'/' => 'index.html'}, root: fixture_path
+        use Rack::Static, urls: { '/' => 'index.html' }, root: fixture_path
         run Rack::File.new(fixture_path)
       end
     end

@@ -1,11 +1,12 @@
 require 'capybara'
-require 'capybara-screenshot'
+require 'capybara/dsl'
 
 require_relative 'dsl/sign_in'
 require_relative 'dsl/js_helpers'
 require_relative 'report_factory'
 require_relative 'reports/store'
 require_relative 'support/capybara'
+require_relative 'screenshot_operator'
 
 module BrowserCrawler
   class Engine
@@ -13,45 +14,55 @@ module BrowserCrawler
     include DSL::SignIn
     include DSL::JsHelpers
 
-    class UnavailableCallBackMethod < StandardError; end
+    class UnavailableCallBackMethod < StandardError;
+    end
 
     REPORT_SAVE_FOLDER_PATH = 'tmp'.freeze
     AVAILABLE_CALLBACK_METHODS = %i[before_crawling
                                     after_crawling
                                     before_page_scan].freeze
+    CUPRITE_OPTIONS = {
+      window_size: [1280, 1600]
+    }.freeze
 
-    attr_reader :report_store
+    SCREENSHOT_OPERATOR_OPTIONS = {
+      save_screenshots:    false,
+      save_screenshots_to: nil,
+      format:              'png',
+      filename:            nil
+    }.freeze
 
-    def initialize(save_screenshots_to: nil, max_pages: nil,
-                   window_width: 1280, window_height: 1600)
+    attr_reader :report_store, :screenshot_operator
 
-      @screenshots_path = save_screenshots_to
+    def initialize(browser_options: {}, screenshots_options: {}, max_pages: nil)
+
+      screenshots_operator_options = SCREENSHOT_OPERATOR_OPTIONS
+                                       .merge(screenshots_options)
+      @screenshot_operator = ScreenshotOperator.new(screenshots_operator_options)
+
       @max_pages = max_pages.to_i
-      @window_width = window_width.to_i
-      @window_height = window_height.to_i
 
-      Capybara.register_chrome_driver(:headless_chrome,
-                                      window_width: @window_width, window_height: @window_height)
-      Capybara.save_path = @screenshots_path
+      cuprite_options = CUPRITE_OPTIONS.merge(browser_options)
+
+      Capybara.register_chrome_driver(:cuprite_chrome, options: cuprite_options)
       Capybara.run_server = false
-      Capybara.default_driver = :headless_chrome
+      Capybara.default_driver = :cuprite_chrome
       Capybara.ignore_hidden_elements = false # a workaround to extracting data from inactive tabs, dialogs, etc.
 
       @report_store = Reports::Store.new
-      @report_store.metadata[:screenshots_path] = @screenshots_path
+      @report_store.metadata[:screenshots_path] = screenshot_operator.screenshots_folder
       @report_store.metadata[:window_width] = @window_width
       @report_store.metadata[:window_height] = @window_height
     end
 
     def js_before_run(javascript: '')
       unless javascript.empty?
-        params = {
-          cmd: 'Page.addScriptToEvaluateOnNewDocument',
-          params: {
-            source: javascript
-          }
-        }
-        Capybara.current_session.driver.browser.send(:bridge).send_command(params)
+        Capybara.current_session
+          .driver
+          .browser
+          .page
+          .command('Page.addScriptToEvaluateOnNewDocument',
+                   source: javascript)
       end
     end
 
@@ -85,9 +96,11 @@ module BrowserCrawler
       sleep 5
     end
 
-    def after_crawling; end
+    def after_crawling;
+    end
 
-    def before_page_scan; end
+    def before_page_scan;
+    end
 
     def overwrite_callback(method:, &block)
       unless AVAILABLE_CALLBACK_METHODS.include?(method)
@@ -106,7 +119,7 @@ module BrowserCrawler
     private
 
     def get_page_links
-      remove_blank_links(page.all('a').map { |a| a['href']})
+      remove_blank_links(page.all('a').map {|a| a['href']})
     end
 
     def remove_blank_links(links)
@@ -182,19 +195,24 @@ module BrowserCrawler
 
       before_page_scan
 
-      screenshot_filename = save_screenshot if @screenshots_path
-
       page_links = get_page_links
 
       puts "#{page_links.count} links found on the page."
 
-      @report_store.record_page_visit(page: visited_page_link,
-                                      extracted_links: page_links,
-                                      screenshot_filename: screenshot_filename)
-      @report_store.pages[visited_page_link] = {
-        extracted_links: page_links,
-        screenshot: screenshot_filename
-      }
+      if screenshot_operator.save_screenshots?
+        screenshot_path = page.save_screenshot(
+          screenshot_operator.file_path(url: page_path)
+        )
+      end
+
+      @report_store.record_page_visit(
+        page:                visited_page_link,
+        extracted_links:     page_links,
+        screenshot_filename: screenshot_path,
+        links_found:         page_links.count,
+        external:            !internal_url?(url),
+        code:                page.status_code
+      )
 
       unless limit_reached?
         page_links.each do |href|

@@ -27,4 +27,29 @@ describe BrowserCrawler::Reports::Store do
       expect(store.unrecognized_links).to eq(['mailto://'])
     end
   end
+
+  describe '#record_page_visit' do
+    it 'records data related the visited page' do
+      store = described_class.new
+      store.record_page_visit(
+        page: '/home',
+        screenshot_filename: 'tmp',
+        error: 'some error',
+        extracted_links: ['/page1.html'],
+        code: 200,
+        links_found: 1,
+        external: false
+      )
+      expect(store.pages).to eq(
+        '/home' => {
+          screenshot: 'tmp',
+          error: 'some error',
+          extracted_links: ['/page1.html'],
+          code: 200,
+          links_found: 1,
+          external: false
+        }
+      )
+    end
+  end
 end
