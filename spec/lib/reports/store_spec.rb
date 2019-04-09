@@ -37,7 +37,6 @@ describe BrowserCrawler::Reports::Store do
         error: 'some error',
         extracted_links: ['/page1.html'],
         code: 200,
-        links_found: 1,
         external: false
       )
       expect(store.pages).to eq(
@@ -46,7 +45,6 @@ describe BrowserCrawler::Reports::Store do
           error: 'some error',
           extracted_links: ['/page1.html'],
           code: 200,
-          links_found: 1,
           external: false
         }
       )

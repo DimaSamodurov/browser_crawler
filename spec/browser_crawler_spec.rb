@@ -107,7 +107,6 @@ describe BrowserCrawler do
               error:           nil,
               external:        false,
               extracted_links: [],
-              links_found:     0,
               screenshot:      nil
             }
           )

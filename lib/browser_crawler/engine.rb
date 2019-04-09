@@ -209,7 +209,6 @@ module BrowserCrawler
         page:                visited_page_link,
         extracted_links:     page_links,
         screenshot_filename: screenshot_path,
-        links_found:         page_links.count,
         external:            !internal_url?(url),
         code:                page.status_code
       )

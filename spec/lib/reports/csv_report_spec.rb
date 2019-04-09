@@ -3,23 +3,23 @@ require 'spec_helper'
 describe BrowserCrawler::Reports::CsvReport do
   describe '#export' do
     it 'exports to csv file' do
-      store = BrowserCrawler::Reports::Store.new(pages: {
-                                                   '/': {
-                                                     extracted_links: [
-                                                       '/help',
-                                                       '/search'
-                                                     ]
-                                                   },
-                                                   '/home': {
-                                                     extracted_links: [
-                                                       '/',
-                                                       '/login'
-                                                     ]
-                                                   },
-                                                   '/blank': {
-                                                     extracted_links: nil
-                                                   }
-                                                 }, metadata: {})
+      store = BrowserCrawler::Reports::Store.new(
+        pages: {
+          '/': {
+            extracted_links: %w[/help /search],
+            external: false,
+            code: 200
+          },
+          '/home': {
+            extracted_links: %w[/ /login],
+            external: false,
+            code: 200
+          },
+          '/blank': {
+            extracted_links: nil
+          }
+        }, metadata: {}
+      )
 
       exporter = described_class.new(store: store)
 
@@ -32,12 +32,15 @@ describe BrowserCrawler::Reports::CsvReport do
           csv_result << row
         end
 
-        expect(csv_result).to eq([['pages', 'extracted links'],
-                                  ['/', '/help'],
-                                  ['/', '/search'],
-                                  ['/home', '/'],
-                                  ['/home', '/login'],
-                                  ['/blank', nil]])
+        expect(csv_result)
+          .to eq([['pages', 'extracted links', 'http code', 'external?'],
+                  ['/', '2', '200', 'false'],
+                  ['/', '/help'],
+                  ['/', '/search'],
+                  ['/home', '2', '200', 'false'],
+                  ['/home', '/'],
+                  ['/home', '/login'],
+                  ['/blank', nil, nil, nil]])
       end
     end
   end
