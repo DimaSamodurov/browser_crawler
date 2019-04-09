@@ -66,7 +66,6 @@ module BrowserCrawler
                             extracted_links: nil,
                             screenshot_filename: nil,
                             error: nil,
-                            links_found: 0,
                             external: false,
                             code: nil)
         @pages[page] = {
@@ -74,7 +73,6 @@ module BrowserCrawler
           error:           error,
           extracted_links: extracted_links,
           code:            code,
-          links_found:     links_found,
           external:        external
         }
       end
