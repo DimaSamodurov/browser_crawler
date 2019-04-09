@@ -29,10 +29,9 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "capybara", '~> 3.12', '>= 3.12.0'
-  spec.add_dependency "capybara-screenshot", '~> 1.0', '>= 1.0.22'
   spec.add_dependency "activesupport", '~> 5.2', '>= 5.2.2'
   spec.add_dependency "chromedriver-helper", '~> 2.1', '>= 2.1.0'
-  spec.add_dependency "selenium-webdriver", '~> 3.141', '>= 3.141.0'
+  spec.add_dependency "cuprite", '~> 0.6.0'
 
   spec.add_development_dependency "bundler", "~> 1.17.2", '>= 1.17.2'
   spec.add_development_dependency "rake", "~> 10.0"

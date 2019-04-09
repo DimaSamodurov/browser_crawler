@@ -65,11 +65,17 @@ module BrowserCrawler
       def record_page_visit(page:,
                             extracted_links: nil,
                             screenshot_filename: nil,
-                            error: nil)
+                            error: nil,
+                            links_found: 0,
+                            external: false,
+                            code: nil)
         @pages[page] = {
-          screenshot: screenshot_filename,
-          error: error,
-          extracted_links: extracted_links
+          screenshot:      screenshot_filename,
+          error:           error,
+          extracted_links: extracted_links,
+          code:            code,
+          links_found:     links_found,
+          external:        external
         }
       end
 

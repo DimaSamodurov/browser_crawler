@@ -19,10 +19,12 @@ end
 
 if options[:url]
   engine = BrowserCrawler::Engine.new(
-    max_pages: options[:max_pages],
-    save_screenshots_to: options[:screenshots_path],
-    window_width: options[:window_width],
-    window_height: options[:window_height]
+      browser_options: {
+          windows_size: [options[:window_width].to_i,
+                         options[:window_height].to_i]
+      },
+      max_pages: options[:max_pages],
+      screenshots_options: { save_screenshots_to: options[:screenshots_path] }
   )
 
   engine.extract_links(url: options[:url]) if options[:url]
@@ -37,13 +39,13 @@ end
 if options[:screenshots_path]
   template = File.read(options[:index_template]) if options[:index_template]
   indexer = BrowserCrawler::Followups::ScreenshotsIndexer
-            .new(template: template)
+                .new(template: template)
   file = indexer.index_directory(options[:screenshots_path])
   puts "Screenshots index is saved to '#{file}'."
 end
 
 if options[:wraith_config]
   followup = BrowserCrawler::Followups::WraithIntegrator
-             .new(report: File.read("#{options[:report_folder]}/crawler_report.yaml"))
+                 .new(report: File.read("#{options[:report_folder]}/crawler_report.yaml"))
   followup.update_config(options[:wraith_config], path_suffix: '?wraith')
 end
