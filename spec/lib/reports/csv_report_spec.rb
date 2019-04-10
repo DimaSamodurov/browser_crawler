@@ -34,12 +34,10 @@ describe BrowserCrawler::Reports::CsvReport do
 
         expect(csv_result)
           .to eq([['pages', 'extracted links', 'http code', 'external?'],
-                  ['/', '2', '200', 'false'],
-                  ['/', '/help'],
-                  ['/', '/search'],
-                  ['/home', '2', '200', 'false'],
-                  ['/home', '/'],
-                  ['/home', '/login'],
+                  ['/', '/help', '200', 'false'],
+                  ['/', '/search', '200', 'false'],
+                  ['/home', '/', '200', 'false'],
+                  ['/home', '/login', '200', 'false'],
                   ['/blank', nil, nil, nil]])
       end
     end

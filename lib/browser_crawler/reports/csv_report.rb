@@ -21,13 +21,11 @@ module BrowserCrawler
               next
             end
 
-            csv << [page,
-                    crawler_result[:extracted_links].size,
-                    crawler_result[:code],
-                    crawler_result[:external]]
-
             crawler_result[:extracted_links].each do |link|
-              csv << [page, link]
+              csv << [page,
+                      link,
+                      crawler_result[:code],
+                      crawler_result[:external]]
             end
           end
         end
