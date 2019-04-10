@@ -10,6 +10,7 @@ describe BrowserCrawler::Reports::Store do
 
       expect(store.to_h).to eq(finished_at: nil,
                                pages: { '/': nil, '/home': nil },
+                               links_count: nil,
                                started_at: nil,
                                unrecognized_links: [])
     end
