@@ -13,10 +13,15 @@ describe BrowserCrawler::Reports::CsvReport do
           '/home': {
             extracted_links: %w[/ /login],
             external: false,
-            code: 200
+            code: 204
           },
           '/blank': {
-            extracted_links: nil
+            extracted_links: nil,
+            code: 401
+          },
+          '/search': {
+            extracted_links: nil,
+            code: 301
           }
         }, metadata: {}
       )
@@ -33,14 +38,17 @@ describe BrowserCrawler::Reports::CsvReport do
         end
 
         expect(csv_result)
-          .to eq([['pages', 'extracted links', 'http code', 'external?'],
-                  ['/', '2', '200', 'false'],
-                  ['/', '/help'],
-                  ['/', '/search'],
-                  ['/home', '2', '200', 'false'],
-                  ['/home', '/'],
-                  ['/home', '/login'],
-                  ['/blank', nil, nil, nil]])
+          .to eq([['pages',
+                   'extracted links',
+                   'external?',
+                   'http status',
+                   'http code'],
+                  ['/', '/help', 'false', 'active', '200'],
+                  ['/', '/search', 'false', 'active', '200'],
+                  ['/home', '/', 'false', 'active', '204'],
+                  ['/home', '/login', 'false', 'active', '204'],
+                  ['/blank', nil, nil, 'unauthorized', '401'],
+                  ['/search', nil, nil, 'redirect', '301']])
       end
     end
   end

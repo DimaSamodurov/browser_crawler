@@ -54,7 +54,8 @@ module BrowserCrawler
           .merge(
             unrecognized_links: @unrecognized_links,
             started_at: @started_at,
-            finished_at: @finished_at
+            finished_at: @finished_at,
+            links_count: count_all_links
           )
       end
 
@@ -79,6 +80,14 @@ module BrowserCrawler
 
       def visited_pages
         @pages.keys
+      end
+
+      private
+
+      def count_all_links
+        @pages.inject(0) do |sum,(_, data)|
+          sum+=data[:extracted_links].size if data && data[:extracted_links]
+        end
       end
     end
   end
