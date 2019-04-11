@@ -24,17 +24,7 @@ module BrowserCrawler
         return nil if links.nil?
 
         links.select do |link|
-          begin
-            uri = URI(link)
-          rescue URI::InvalidURIError, URI::InvalidComponentError
-            next
-          end
-
-          if uri.scheme
-            link =~ /\A#{URI.regexp(%w[http https])}\z/
-          else
-            true
-          end
+          link =~ /\A#{URI.regexp(%w[http https])}\z/
         end
       end
 
