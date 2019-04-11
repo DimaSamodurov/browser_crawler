@@ -196,7 +196,7 @@ module BrowserCrawler
       return if uri.nil?
 
       page_path         = uri.path
-      visited_page_link = full_url(uri)
+      visited_page_link = full_url(uri).sub(/(\/)+$/,'')
 
       if skip_visit?(visited_page_link, uri)
         puts "Skipped visited #{url}."
