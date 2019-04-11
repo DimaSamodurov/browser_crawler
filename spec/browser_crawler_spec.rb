@@ -145,6 +145,13 @@ describe BrowserCrawler do
           )
   end
 
+  it 'checks that crawler does not scan link twice or more times' do
+    crawler = BrowserCrawler::Engine.new
+    crawler.extract_links(url: "#{url}page8.html")
+
+    expect(crawler.report_store.pages.size).to eq(2)
+  end
+
   context 'change Capybara driver' do
     let(:app) do
       fixture_path = File.expand_path('fixtures/static_site', __dir__)
