@@ -23,37 +23,25 @@ describe BrowserCrawler do
   it 'starts crawling with the path provided in the url' do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: "#{url}page2.html")
-    expect(crawler.visited_pages.first).to eql '/page2.html'
+    expect(crawler.visited_pages.first).to eql "#{url}page2.html"
   end
 
-  it 'extracts links from the page with options only_path' do
+  it 'extracts links from the page' do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: url)
 
-    extracted_links = crawler.report_store.pages['/'][:extracted_links]
+    extracted_links = crawler.report_store.pages[url][:extracted_links]
 
     expect(extracted_links[0]).to match /page1.html/
     expect(extracted_links[1]).to match /page2.html/
     expect(extracted_links[2]).to match /page3.html/
   end
 
-  it 'extracts links from the page with' do
-    crawler = BrowserCrawler::Engine.new(max_pages: 1)
-    crawler.extract_links(url: url, only_path: false)
-
-    url, page_report = crawler.report_store.pages.first
-    extracted_links  = page_report[:extracted_links]
-
-    expect(extracted_links[0]).to match /page1.html/
-    expect(extracted_links[0]).to match /http:\/\/127\.0\.0\.1/
-    expect(url).to match /http:\/\/127\.0\.0\.1/
-  end
-
   it 'visits internal pages' do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: url)
-    internal_pages = %w[/ /page1.html /page11.html /page12.html /page2.html /page21.html]
-    expect(internal_pages - crawler.report_store.visited_pages).to be_empty
+
+    expect(crawler.report_store.visited_pages.size).to eq(10)
   end
 
   describe 'with max_pages option specified' do
@@ -68,7 +56,7 @@ describe BrowserCrawler do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: "#{url}page4.html")
 
-    expect(crawler.visited_pages).to eql ['/page4.html']
+    expect(crawler.visited_pages).to eql ["#{url}page4.html"]
     unrecognized_links = crawler.report_store.unrecognized_links
     expect(unrecognized_links.include?('javascript://:')).to be true
     expect(unrecognized_links.include?('mailto:example@com')).to be true
@@ -79,7 +67,7 @@ describe BrowserCrawler do
     crawler.extract_links(url: "#{url}page5.html")
 
     extracted_links = crawler.report_store
-                        .pages['/page5.html'][:extracted_links]
+                        .pages["#{url}page5.html"][:extracted_links]
     expect(extracted_links).to eql []
   end
 
@@ -91,7 +79,8 @@ describe BrowserCrawler do
       crawler.extract_links(url: "#{url}page5.html")
 
       expect(Dir["#{folder_path}/*/*"][0]).to match(/page5\.html\.png/)
-      report_screenshot = crawler.report_store.pages['/page5.html'][:screenshot]
+      report_screenshot = crawler.report_store
+                            .pages["#{url}page5.html"][:screenshot]
       expect(report_screenshot).to match(/page5\.html\.png/)
     end
   end
@@ -100,7 +89,7 @@ describe BrowserCrawler do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: "#{url}page6.html")
 
-    expect(crawler.report_store.pages['/page9999.html'])
+    expect(crawler.report_store.pages["#{url}page9999.html"])
       .to eq(
             {
               code:            404,
@@ -108,6 +97,50 @@ describe BrowserCrawler do
               external:        false,
               extracted_links: [],
               screenshot:      nil
+            }
+          )
+  end
+
+  it 'checks that information about external urls were added to store' do
+    crawler = BrowserCrawler::Engine.new(deep_visit: true)
+
+    crawler.extract_links(url: "#{url}page7.html")
+
+    expect(crawler.report_store.pages)
+      .to eq(
+            { "#{url}page7.html"    => {
+              :code            => 200,
+              :error           => nil,
+              :external        => false,
+              :extracted_links => ['http://localhost:12345/page9999.html'],
+              :screenshot      => nil
+            },
+              'http://localhost:12345/page9999.html' => {
+                :code            => 200,
+                :error           => nil,
+                :external        => true,
+                :extracted_links => [],
+                :screenshot      => nil
+              }
+            }
+          )
+  end
+
+  it 'checks that information about external urls were not added to store' do
+    crawler = BrowserCrawler::Engine.new(deep_visit: false)
+
+    crawler.extract_links(url: "#{url}page7.html")
+
+    expect(crawler.report_store.pages)
+      .to eq(
+            {
+              "#{url}page7.html" => {
+                :code            => 200,
+                :error           => nil,
+                :external        => false,
+                :extracted_links => ['http://localhost:12345/page9999.html'],
+                :screenshot      => nil
+              }
             }
           )
   end
@@ -137,7 +170,7 @@ describe BrowserCrawler do
       crawler.js_before_run(javascript: javascript)
       crawler.extract_links(url: url)
 
-      extracted_links = crawler.report_store.pages['/'][:extracted_links]
+      extracted_links = crawler.report_store.pages[url][:extracted_links]
 
       expect(extracted_links).to eq([])
     end
@@ -150,12 +183,13 @@ describe BrowserCrawler do
       crawler = BrowserCrawler::Engine.new(max_pages: 1)
 
       crawler.overwrite_callback(method: :before_crawling) do
-        @report_store.record_page_visit(page: '/before_crawling', extracted_links: ['link1'])
+        @report_store.record_page_visit(page:            "#{url}before_crawling",
+                                        extracted_links: ['link1'])
       end
 
       crawler.extract_links(url: url)
 
-      extracted_links = crawler.report_store.pages['/before_crawling'][:extracted_links]
+      extracted_links = crawler.report_store.pages["#{url}before_crawling"][:extracted_links]
 
       expect(extracted_links).to eq(['link1'])
     end
@@ -169,12 +203,12 @@ describe BrowserCrawler do
       crawler = BrowserCrawler::Engine.new(max_pages: 1)
 
       crawler.overwrite_callback(method: :after_crawling) do
-        @report_store.record_page_visit(page: '/after_crawling', extracted_links: ['link1'])
+        @report_store.record_page_visit(page: "#{url}after_crawling", extracted_links: ['link1'])
       end
 
       crawler.extract_links(url: url)
 
-      extracted_links = crawler.report_store.pages['/after_crawling'][:extracted_links]
+      extracted_links = crawler.report_store.pages["#{url}after_crawling"][:extracted_links]
 
       expect(extracted_links).to eq(['link1'])
     end
