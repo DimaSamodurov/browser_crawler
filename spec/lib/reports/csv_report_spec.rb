@@ -6,12 +6,12 @@ describe BrowserCrawler::Reports::CsvReport do
       store = BrowserCrawler::Reports::Store.new(
         pages: {
           '/': {
-            extracted_links: %w[/help /search],
+            extracted_links: %w[http:/github.com/help http:/github.com/search javascript://:],
             external: false,
             code: 200
           },
           '/home': {
-            extracted_links: %w[/ /login],
+            extracted_links: %w[http:/github.com/ http:/github.com/login mailto:],
             external: false,
             code: 204
           },
@@ -43,10 +43,10 @@ describe BrowserCrawler::Reports::CsvReport do
                    'external?',
                    'http status',
                    'http code'],
-                  ['/', '/help', 'false', 'active', '200'],
-                  ['/', '/search', 'false', 'active', '200'],
-                  ['/home', '/', 'false', 'active', '204'],
-                  ['/home', '/login', 'false', 'active', '204'],
+                  ['/', 'http:/github.com/help', 'false', 'active', '200'],
+                  ['/', 'http:/github.com/search', 'false', 'active', '200'],
+                  ['/home', 'http:/github.com/', 'false', 'active', '204'],
+                  ['/home', 'http:/github.com/login', 'false', 'active', '204'],
                   ['/blank', nil, nil, 'unauthorized', '401'],
                   ['/search', nil, nil, 'redirect', '301']])
       end
