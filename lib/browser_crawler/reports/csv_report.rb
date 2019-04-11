@@ -1,5 +1,5 @@
 require 'csv'
-require 'pry'
+
 module BrowserCrawler
   module Reports
     # It involves methods which allow to save a store to a csv file
