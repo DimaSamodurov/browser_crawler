@@ -10,7 +10,11 @@ module BrowserCrawler
 
       def export(save_folder_path:)
         CSV.open("#{save_folder_path}/crawler_report.csv", 'wb') do |csv|
-          csv << csv_header
+          csv << ['pages',
+                  'extracted links',
+                  'is external',
+                  'http status',
+                  'http code']
 
           @store.pages.each do |page, crawler_result|
             save_to_csv(csv, page, crawler_result)
@@ -39,7 +43,7 @@ module BrowserCrawler
       def save_to_csv(csv, page, crawler_result)
         extracted_links = filter_links(crawler_result[:extracted_links])
 
-        if extracted_links.nil?
+        if extracted_links.nil? || extracted_links.empty?
           csv << save_to_row(page, crawler_result)
           return
         end
