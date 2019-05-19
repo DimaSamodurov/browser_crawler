@@ -60,6 +60,7 @@ module BrowserCrawler
       end
 
       def record_unrecognized_link(link)
+        return if  @unrecognized_links.include?(link)
         @unrecognized_links << link unless @unrecognized_links.include?(link)
       end
 

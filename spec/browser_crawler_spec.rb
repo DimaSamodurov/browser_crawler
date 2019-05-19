@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'rack'
-
+require 'pry'
 describe BrowserCrawler do
   it 'has a version number' do
     expect(BrowserCrawler::VERSION).not_to be nil
@@ -23,7 +23,8 @@ describe BrowserCrawler do
   it 'starts crawling with the path provided in the url' do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: "#{url}/page2.html")
-    expect(crawler.visited_pages.first).to eql "#{url}/page2.html"
+    expect(crawler.report_store.visited_pages.first)
+      .to eql "#{url}/page2.html"
   end
 
   it 'extracts links from the page' do
@@ -56,7 +57,7 @@ describe BrowserCrawler do
     crawler = BrowserCrawler::Engine.new
     crawler.extract_links(url: "#{url}/page4.html")
 
-    expect(crawler.visited_pages).to eql ["#{url}/page4.html"]
+    expect(crawler.report_store.visited_pages).to eql ["#{url}/page4.html"]
     unrecognized_links = crawler.report_store.unrecognized_links
     expect(unrecognized_links.include?('javascript://:')).to be true
     expect(unrecognized_links.include?('mailto:example@com')).to be true
@@ -78,10 +79,9 @@ describe BrowserCrawler do
       })
       crawler.extract_links(url: "#{url}/page5.html")
 
-      expect(Dir["#{folder_path}/*/*"][0]).to match(/page5\.html\.png/)
       report_screenshot = crawler.report_store
                             .pages["#{url}/page5.html"][:screenshot]
-      expect(report_screenshot).to match(/page5\.html\.png/)
+      expect(report_screenshot).to match(/page5/)
     end
   end
 

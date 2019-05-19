@@ -42,13 +42,13 @@ describe BrowserCrawler::ScreenshotOperator do
     it 'returns file path based on the url option' do
       operator = described_class.new
 
-      expect(operator.file_path(url: '/home')).to match(/home/)
+      expect(operator.file_path(url: 'http://127.0.0.1/home')).to match(/home/)
     end
 
     it 'returns file path based on screenshot folder' do
       operator = described_class.new(save_screenshots_to: 'random')
 
-      expect(operator.file_path(url: '/home')).to match(%r{/home})
+      expect(operator.file_path).to match(%r{random})
     end
   end
 
