@@ -22,7 +22,8 @@ module BrowserCrawler
 
     REPORT_SAVE_FOLDER_PATH    = 'tmp'.freeze
     AVAILABLE_CALLBACK_METHODS = %i[before_crawling
-                                    after_crawling].freeze
+                                    after_crawling
+                                    before_page_scan].freeze
 
     CUPRITE_OPTIONS            = {
       window_size: [1280, 1600]
@@ -45,31 +46,16 @@ module BrowserCrawler
                    max_pages: nil,
                    deep_visit: false,
                    logger: nil)
-
-      @logger = logger ? logger : Logger.new(STDOUT)
-
       screenshots_operator_options = SCREENSHOT_OPERATOR_OPTIONS
                                        .merge(screenshots_options)
-      @screenshot_operator         = ScreenshotOperator.new(screenshots_operator_options)
+      @screenshot_operator= ScreenshotOperator.new(screenshots_operator_options)
 
       cuprite_options = CUPRITE_OPTIONS.merge(browser_options)
 
-      Capybara.register_chrome_driver(:cuprite_chrome, options: cuprite_options)
-      Capybara.run_server             = false
-      Capybara.default_driver         = :cuprite_chrome
-      Capybara.ignore_hidden_elements = false # a workaround to extracting data from inactive tabs, dialogs, etc.
-
-      @report_store                             = Reports::Store.new
-      @report_store.metadata[:screenshots_path] = screenshot_operator.screenshots_folder
-      @report_store.metadata[:window_width]     = cuprite_options[:window_size][0]
-      @report_store.metadata[:window_height]    = cuprite_options[:window_size][1]
-
-      @crawl_manager = EngineUtilities::CrawlManager.new(
-        report_store: report_store,
-        max_pages: max_pages.to_i,
-        deep_visit: deep_visit,
-        logger: @logger
-      )
+      @logger = logger ? logger : Logger.new(STDOUT)
+      register_chrome_driver(cuprite_options)
+      initialize_report_store(cuprite_options)
+      initialize_crawl_manager(max_pages, deep_visit)
     end
 
     def js_before_run(javascript: '')
@@ -107,7 +93,9 @@ module BrowserCrawler
 
     def report_save(folder_path: '', type: :yaml)
       save_folder_path = folder_path.empty? ? REPORT_SAVE_FOLDER_PATH : folder_path
-      ReportFactory.save(store: @report_store, type: type.to_sym, save_folder_path: save_folder_path)
+      ReportFactory.save(store: @report_store,
+                         type: type.to_sym,
+                         save_folder_path: save_folder_path)
     end
 
     def before_crawling
@@ -125,7 +113,12 @@ module BrowserCrawler
       end
       return unless block_given?
 
-      define_singleton_method(method.to_sym, block)
+      if %i[before_page_scan].include?(method)
+        EngineUtilities::PageInspector
+          .define_singleton_method(method.to_sym, block)
+      else
+        define_singleton_method(method.to_sym, block)
+      end
     end
 
     private
@@ -135,6 +128,31 @@ module BrowserCrawler
       Capybara.app_host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
 
       @report_store.start(url: url)
+    end
+
+    def initialize_report_store(cuprite_options)
+      @report_store = Reports::Store.new
+      @report_store.metadata[:screenshots_path] = screenshot_operator
+                                                    .screenshots_folder
+      @report_store.metadata[:window_width] = cuprite_options[:window_size][0]
+      @report_store.metadata[:window_height] = cuprite_options[:window_size][1]
+    end
+
+    def register_chrome_driver(cuprite_options)
+      Capybara.register_chrome_driver(:cuprite_chrome, options: cuprite_options)
+      Capybara.run_server             = false
+      Capybara.default_driver         = :cuprite_chrome
+      # a workaround to extracting data from inactive tabs, dialogs, etc.
+      Capybara.ignore_hidden_elements = false
+    end
+
+    def initialize_crawl_manager(max_pages, deep_visit)
+      @crawl_manager = EngineUtilities::CrawlManager.new(
+        report_store: report_store,
+        max_pages: max_pages.to_i,
+        deep_visit: deep_visit,
+        logger: @logger
+      )
     end
   end
 end

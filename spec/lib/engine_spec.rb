@@ -30,7 +30,9 @@ describe BrowserCrawler::Engine do
     it 'checks available callback methods' do
       exist_methods = BrowserCrawler::Engine::AVAILABLE_CALLBACK_METHODS
       expect(exist_methods).to eq(%i[before_crawling
-                                     after_crawling])
+                                     after_crawling
+                                     before_page_scan
+                                  ])
     end
 
     it 'raises error when overwrote unavailable callback method' do
@@ -43,8 +45,8 @@ describe BrowserCrawler::Engine do
           report_store.record_page_visit(page: 'test')
         end
       end.to raise_error(
-        BrowserCrawler::Engine::UnavailableCallBackMethod, message
-      )
+               BrowserCrawler::Engine::UnavailableCallBackMethod, message
+             )
     end
   end
 end

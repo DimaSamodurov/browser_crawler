@@ -33,7 +33,7 @@ if options[:url]
                      type: options[:report_format])
 
   puts "Report is saved to #{options[:report_folder]} as #{options[:report_format]} file."
-  puts "Total pages visited: #{engine.visited_pages.count}."
+  puts "Total pages visited: #{engine.report_store.visited_pages.count}."
 end
 
 if options[:screenshots_path]

@@ -4,16 +4,17 @@ require_relative 'link_scanner'
 module BrowserCrawler
   module EngineUtilities
     class PageInspector
+      include Capybara::DSL
 
       attr_reader :link_inspector,
                   :link_scanner,
                   :capybara_session,
-                  :links,
+                  :result,
                   :report_store
 
       def initialize(link_inspector:, capybara_session:, report_store:)
         @link_inspector = link_inspector
-        @capybara_session = capybara_session
+        @capybara_session = Capybara.current_session
         @report_store = report_store
 
         @link_scanner = LinkScanner.new(link_inspector: link_inspector)
@@ -23,9 +24,11 @@ module BrowserCrawler
         uri = link_inspector.uri
         Capybara.app_host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
 
-        capybara_session.visit link_inspector.full_url
+        visit link_inspector.full_url
 
-        @links = link_scanner.scan(page: capybara_session)
+        before_page_scan
+
+        @result = link_scanner.scan(page: capybara_session)
       end
 
       def save_to_report(screenshot_operator: nil)
@@ -33,20 +36,17 @@ module BrowserCrawler
 
         report_store.record_page_visit(
           page:                link_inspector.full_url,
-          extracted_links:     links,
+          extracted_links:     result,
           screenshot_filename: screenshot_path,
           external:            link_inspector.external_url?,
           code:                capybara_session.status_code
         )
       end
 
+      def before_page_scan; end
 
       def success?
-        links && !links.empty?
-      end
-
-      def result
-        links
+        result && !result.empty?
       end
 
       private

@@ -15,17 +15,18 @@ module BrowserCrawler
                   :logger
 
       def initialize(report_store:,
-                     max_pages:,
-                     deep_visit:,
+                     max_pages: 0,
+                     deep_visit: false,
                      logger: nil)
         @report_store     = report_store
         @max_pages        = max_pages
         @deep_visit       = deep_visit
-        @logger           = logger
+        @logger           = logger || Logger.new(STDOUT)
       end
 
       def crawl(target_url:, capybara_session:, screenshot_operator: nil)
-        configurate_links_queue(target_url: target_url)
+        @host_name             = UrlTools.uri!(url: target_url).host
+        @unvisited_links_queue = [target_url]
 
         loop do
           break if unvisited_links_queue.empty? || limit_reached?
@@ -69,13 +70,8 @@ module BrowserCrawler
 
         if page_inspector.success?
           logger.info("#{page_inspector.result.size} links found on the page.")
-          unvisited_links_queue.push(*page_inspector.result)
+          unvisited_links_queue.push(*page_inspector.result).uniq!
         end
-      end
-
-      def configurate_links_queue(target_url:)
-        @host_name             = UrlTools.uri!(url: target_url).host
-        @unvisited_links_queue = [target_url]
       end
 
       def internal_resource?(link_inspector)

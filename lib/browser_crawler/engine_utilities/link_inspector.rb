@@ -25,13 +25,7 @@ module BrowserCrawler
       end
 
       def full_url
-       @full_url ||= begin
-          if uri.port == 80 || uri.port == 443
-            "#{uri.scheme}://#{uri.host}#{uri.path}"
-          else
-            "#{uri.scheme}://#{uri.host}:#{uri.port}#{uri.path}"
-          end.sub(/(\/)+$/,'')
-        end
+       @full_url ||= UrlTools.full_url(uri: uri)
       end
     end
   end
