@@ -4,9 +4,9 @@ describe BrowserCrawler::EngineUtilities::LinkScanner do
   describe '#scan' do
     it 'returns links from the page' do
       allow(Capybara.current_session)
-        .to receive(:all).with('a').and_return([{'href' => '/home'},
-                                                 {'href' => '/login'},
-                                                 { 'href' => '/success'}])
+        .to receive(:all).with('a').and_return([{ 'href' => '/home' },
+                                                { 'href' => '/login' },
+                                                { 'href' => '/success' }])
       link_inspector = BrowserCrawler::EngineUtilities::LinkInspector.new(
         raw_link: 'https://127.0.0.1/home',
         host_name: '127.0.0.1'
@@ -20,9 +20,9 @@ describe BrowserCrawler::EngineUtilities::LinkScanner do
 
     it 'returns only filled links' do
       allow(Capybara.current_session)
-        .to receive(:all).with('a').and_return([{'href' => '/home'},
-                                                {'href' => nil },
-                                                { 'href' => ''}])
+        .to receive(:all).with('a').and_return([{ 'href' => '/home' },
+                                                { 'href' => nil },
+                                                { 'href' => '' }])
 
       link_inspector = BrowserCrawler::EngineUtilities::LinkInspector.new(
         raw_link: 'https://127.0.0.1/home',

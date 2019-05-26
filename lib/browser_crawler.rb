@@ -1,4 +1,4 @@
-require "browser_crawler/version"
+require 'browser_crawler/version'
 require 'browser_crawler/options'
 require 'browser_crawler/engine'
 

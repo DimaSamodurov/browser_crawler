@@ -1,22 +1,24 @@
 require_relative '../url_tools'
+require_relative '../hooks_operator'
 require_relative 'link_scanner'
 
 module BrowserCrawler
   module EngineUtilities
     class PageInspector
       include Capybara::DSL
+      include HooksOperator
 
       attr_reader :link_inspector,
                   :link_scanner,
                   :capybara_session,
-                  :result,
+                  :scan_result,
                   :report_store
 
       def initialize(link_inspector:, capybara_session:, report_store:)
         @link_inspector = link_inspector
-        @capybara_session = Capybara.current_session
+        @capybara_session = capybara_session
         @report_store = report_store
-
+        @scan_result = []
         @link_scanner = LinkScanner.new(link_inspector: link_inspector)
       end
 
@@ -26,27 +28,27 @@ module BrowserCrawler
 
         visit link_inspector.full_url
 
-        before_page_scan
-
-        @result = link_scanner.scan(page: capybara_session)
+        with_hooks_for(type: :each) do
+          @scan_result = link_scanner.scan(page: capybara_session)
+        end
       end
 
       def save_to_report(screenshot_operator: nil)
         screenshot_path = save_screenshot(screenshot_operator)
 
         report_store.record_page_visit(
-          page:                link_inspector.full_url,
-          extracted_links:     result,
+          page: link_inspector.full_url,
+          extracted_links: scan_result,
           screenshot_filename: screenshot_path,
-          external:            link_inspector.external_url?,
-          code:                capybara_session.status_code
+          external: link_inspector.external_url?,
+          code: capybara_session.status_code
         )
       end
 
       def before_page_scan; end
 
       def success?
-        result && !result.empty?
+        scan_result && !scan_result.empty?
       end
 
       private

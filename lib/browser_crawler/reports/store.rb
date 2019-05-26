@@ -60,7 +60,8 @@ module BrowserCrawler
       end
 
       def record_unrecognized_link(link)
-        return if  @unrecognized_links.include?(link)
+        return if @unrecognized_links.include?(link)
+
         @unrecognized_links << link unless @unrecognized_links.include?(link)
       end
 
@@ -71,11 +72,11 @@ module BrowserCrawler
                             external: false,
                             code: nil)
         @pages[page] = {
-          screenshot:      screenshot_filename,
-          error:           error,
+          screenshot: screenshot_filename,
+          error: error,
           extracted_links: extracted_links,
-          code:            code,
-          external:        external
+          code: code,
+          external: external
         }
       end
 
@@ -86,8 +87,8 @@ module BrowserCrawler
       private
 
       def count_all_links
-        @pages.inject(0) do |sum,(_, data)|
-          sum+=data[:extracted_links].size if data && data[:extracted_links]
+        @pages.inject(0) do |sum, (_, data)|
+          sum + data[:extracted_links]&.size.to_i if data && data[:extracted_links]
         end
       end
     end

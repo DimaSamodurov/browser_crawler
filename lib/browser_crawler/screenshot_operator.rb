@@ -25,7 +25,7 @@ module BrowserCrawler
       if !filename_base_default? || url.nil?
         "#{filename_prefix}_#{filename_base}.#{format}"
       else
-        path = UrlTools.uri(url: url)&.path&.gsub('/','%')&.gsub('.','')
+        path = UrlTools.uri(url: url)&.path&.gsub('/', '%')&.gsub('.', '')
         "#{filename_prefix}_#{path}.#{format}"
       end
     end

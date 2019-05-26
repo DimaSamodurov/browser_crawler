@@ -5,7 +5,6 @@ require_relative 'page_inspector'
 module BrowserCrawler
   module EngineUtilities
     class CrawlManager
-
       attr_reader :target_url,
                   :unvisited_links_queue,
                   :report_store,
@@ -69,8 +68,8 @@ module BrowserCrawler
         page_inspector.save_to_report(screenshot_operator: screenshot_operator)
 
         if page_inspector.success?
-          logger.info("#{page_inspector.result.size} links found on the page.")
-          unvisited_links_queue.push(*page_inspector.result).uniq!
+          logger.info("#{page_inspector.scan_result.size} links found on the page.")
+          unvisited_links_queue.push(*page_inspector.scan_result).uniq!
         end
       end
 
@@ -79,7 +78,7 @@ module BrowserCrawler
       end
 
       def page_unvisited?(link_inspector)
-        ! visited_pages.include?(link_inspector.full_url)
+        !visited_pages.include?(link_inspector.full_url)
       end
 
       def limit_reached?

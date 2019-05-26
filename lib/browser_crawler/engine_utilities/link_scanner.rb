@@ -1,7 +1,6 @@
 module BrowserCrawler
   module EngineUtilities
     class LinkScanner
-
       attr_reader :link_inspector
 
       def initialize(link_inspector:)

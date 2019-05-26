@@ -19,7 +19,7 @@ describe BrowserCrawler::UrlTools do
     end
 
     it 'raises error if url invalid' do
-      expect{described_class.uri!(url: 'example.com')}
+      expect { described_class.uri!(url: 'example.com') }
         .to raise_error(URI::InvalidURIError)
     end
   end

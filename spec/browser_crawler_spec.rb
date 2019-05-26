@@ -68,19 +68,19 @@ describe BrowserCrawler do
     crawler.extract_links(url: "#{url}/page5.html")
 
     extracted_links = crawler.report_store
-                        .pages["#{url}/page5.html"][:extracted_links]
+                             .pages["#{url}/page5.html"][:extracted_links]
     expect(extracted_links).to eql []
   end
 
   it 'checks that screenshot was saved' do
     Dir.mktmpdir do |folder_path|
       crawler = BrowserCrawler::Engine.new(screenshots_options: {
-        save_screenshots_to: folder_path
-      })
+                                             save_screenshots_to: folder_path
+                                           })
       crawler.extract_links(url: "#{url}/page5.html")
 
       report_screenshot = crawler.report_store
-                            .pages["#{url}/page5.html"][:screenshot]
+                                 .pages["#{url}/page5.html"][:screenshot]
       expect(report_screenshot).to match(/page5/)
     end
   end
@@ -91,14 +91,12 @@ describe BrowserCrawler do
 
     expect(crawler.report_store.pages["#{url}/page9999.html"])
       .to eq(
-            {
-              code:            404,
-              error:           nil,
-              external:        false,
-              extracted_links: [],
-              screenshot:      nil
-            }
-          )
+        code: 404,
+        error: nil,
+        external: false,
+        extracted_links: [],
+        screenshot: nil
+      )
   end
 
   it 'checks that information about external urls were added to store' do
@@ -108,22 +106,21 @@ describe BrowserCrawler do
 
     expect(crawler.report_store.pages)
       .to eq(
-            { "#{url}/page7.html"    => {
-              :code            => 200,
-              :error           => nil,
-              :external        => false,
-              :extracted_links => ['http://localhost:12345/page9999.html'],
-              :screenshot      => nil
-            },
-              'http://localhost:12345/page9999.html' => {
-                :code            => 200,
-                :error           => nil,
-                :external        => true,
-                :extracted_links => [],
-                :screenshot      => nil
-              }
-            }
-          )
+        "#{url}/page7.html" => {
+          code: 200,
+          error: nil,
+          external: false,
+          extracted_links: ['http://localhost:12345/page9999.html'],
+          screenshot: nil
+        },
+        'http://localhost:12345/page9999.html' => {
+          code: 200,
+          error: nil,
+          external: true,
+          extracted_links: [],
+          screenshot: nil
+        }
+      )
   end
 
   it 'checks that information about external urls were not added to store' do
@@ -133,16 +130,14 @@ describe BrowserCrawler do
 
     expect(crawler.report_store.pages)
       .to eq(
-            {
-              "#{url}/page7.html" => {
-                :code            => 200,
-                :error           => nil,
-                :external        => false,
-                :extracted_links => ['http://localhost:12345/page9999.html'],
-                :screenshot      => nil
-              }
-            }
-          )
+        "#{url}/page7.html" => {
+          code: 200,
+          error: nil,
+          external: false,
+          extracted_links: ['http://localhost:12345/page9999.html'],
+          screenshot: nil
+        }
+      )
   end
 
   it 'checks that crawler does not scan link twice or more times' do
@@ -180,44 +175,6 @@ describe BrowserCrawler do
       extracted_links = crawler.report_store.pages[url][:extracted_links]
 
       expect(extracted_links).to eq([])
-    end
-
-    it 'overwrites before_crawling callback method and executes it' do
-      Capybara.server = :webrick
-      Capybara::Server.new(app).boot
-      url = "http://#{server.host}:#{server.port}"
-
-      crawler = BrowserCrawler::Engine.new(max_pages: 1)
-
-      crawler.overwrite_callback(method: :before_crawling) do
-        @report_store.record_page_visit(page:            "#{url}/before_crawling",
-                                        extracted_links: ['link1'])
-      end
-
-      crawler.extract_links(url: url)
-
-      extracted_links = crawler.report_store.pages["#{url}/before_crawling"][:extracted_links]
-
-      expect(extracted_links).to eq(['link1'])
-    end
-
-
-    it 'overwrites after_crawling callback method and executes it' do
-      Capybara.server = :webrick
-      Capybara::Server.new(app).boot
-      url = "http://#{server.host}:#{server.port}"
-
-      crawler = BrowserCrawler::Engine.new(max_pages: 1)
-
-      crawler.overwrite_callback(method: :after_crawling) do
-        @report_store.record_page_visit(page: "#{url}/after_crawling", extracted_links: ['link1'])
-      end
-
-      crawler.extract_links(url: url)
-
-      extracted_links = crawler.report_store.pages["#{url}/after_crawling"][:extracted_links]
-
-      expect(extracted_links).to eq(['link1'])
     end
   end
 end

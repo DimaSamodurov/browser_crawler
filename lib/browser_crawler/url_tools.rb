@@ -3,14 +3,13 @@ module BrowserCrawler
     def uri(url:)
       uri!(url: url)
     rescue URI::InvalidURIError
-      return
+      nil
     end
 
     def uri!(url:)
       string_url = url.to_s
-      unless string_url =~ /\A#{URI::regexp(%w(http https))}\z/
-        raise URI::InvalidURIError
-      end
+      raise URI::InvalidURIError unless string_url =~ /\A#{URI.regexp(%w[http https])}\z/
+
       URI(string_url)
     end
 
@@ -19,7 +18,7 @@ module BrowserCrawler
         "#{uri.scheme}://#{uri.host}#{uri.path}"
       else
         "#{uri.scheme}://#{uri.host}:#{uri.port}#{uri.path}"
-      end.sub(/(\/)+$/,'')
+      end.sub(%r{(/)+$}, '')
     end
 
     module_function :uri, :uri!, :full_url

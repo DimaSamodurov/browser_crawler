@@ -10,30 +10,30 @@ require_relative 'support/capybara'
 require_relative 'screenshot_operator'
 require_relative 'url_tools'
 require_relative 'engine_utilities/crawl_manager'
+require_relative 'hooks_operator'
+require_relative 'hooks_container'
 
 module BrowserCrawler
   class Engine
     include Capybara::DSL
+    include HooksOperator
     include DSL::SignIn
     include DSL::JsHelpers
 
-    class UnavailableCallBackMethod < StandardError;
+    class UnavailableCallBackMethod < StandardError
     end
 
     REPORT_SAVE_FOLDER_PATH    = 'tmp'.freeze
-    AVAILABLE_CALLBACK_METHODS = %i[before_crawling
-                                    after_crawling
-                                    before_page_scan].freeze
 
     CUPRITE_OPTIONS            = {
       window_size: [1280, 1600]
     }.freeze
 
     SCREENSHOT_OPERATOR_OPTIONS = {
-      save_screenshots:    false,
+      save_screenshots: false,
       save_screenshots_to: nil,
-      format:              'png',
-      filename:            nil
+      format: 'png',
+      filename: nil
     }.freeze
 
     attr_reader :report_store,
@@ -47,41 +47,35 @@ module BrowserCrawler
                    deep_visit: false,
                    logger: nil)
       screenshots_operator_options = SCREENSHOT_OPERATOR_OPTIONS
-                                       .merge(screenshots_options)
-      @screenshot_operator= ScreenshotOperator.new(screenshots_operator_options)
+                                     .merge(screenshots_options)
+      @screenshot_operator = ScreenshotOperator.new(screenshots_operator_options)
 
       cuprite_options = CUPRITE_OPTIONS.merge(browser_options)
 
-      @logger = logger ? logger : Logger.new(STDOUT)
+      @logger = logger || Logger.new(STDOUT)
+
       register_chrome_driver(cuprite_options)
       initialize_report_store(cuprite_options)
       initialize_crawl_manager(max_pages, deep_visit)
     end
 
     def js_before_run(javascript: '')
-      unless javascript.empty?
-        Capybara.current_session
-          .driver
-          .browser
-          .page
-          .command('Page.addScriptToEvaluateOnNewDocument',
-                   source: javascript)
-      end
+      return if javascript.empty?
+
+      @javascript_before_run = javascript
     end
 
     def extract_links(url:)
       initialize_crawler(url)
 
       begin
-        before_crawling
-
-        crawl_manager.crawl(
-          target_url: url,
-          capybara_session: Capybara.current_session,
-          screenshot_operator: screenshot_operator
-        )
-
-        after_crawling
+        with_hooks_for(type: :all) do
+          crawl_manager.crawl(
+            target_url: url,
+            capybara_session: Capybara.current_session,
+            screenshot_operator: screenshot_operator
+          )
+        end
       rescue StandardError => error
         logger
           .fatal("#{error.message} \n #{error.backtrace.join("\n")}")
@@ -98,42 +92,38 @@ module BrowserCrawler
                          save_folder_path: save_folder_path)
     end
 
-    def before_crawling
-      sign_in if ENV['username']
-      sleep 5
+    def before(type: :all, &hook)
+      HooksContainer.instance.add_hook(method: :before, type: type, hook: hook)
     end
 
-    def after_crawling;
-    end
-
-    def overwrite_callback(method:, &block)
-      unless AVAILABLE_CALLBACK_METHODS.include?(method)
-        raise UnavailableCallBackMethod.new('Overwrite unavailable' \
-                                            " callback method: #{method}")
-      end
-      return unless block_given?
-
-      if %i[before_page_scan].include?(method)
-        EngineUtilities::PageInspector
-          .define_singleton_method(method.to_sym, block)
-      else
-        define_singleton_method(method.to_sym, block)
-      end
+    def after(type: :all, &hook)
+      HooksContainer.instance.add_hook(method: :after, type: type, hook: hook)
     end
 
     private
 
     def initialize_crawler(url)
+      Capybara.current_session.quit
+
       uri               = UrlTools.uri!(url: url)
       Capybara.app_host = "#{uri.scheme}://#{uri.host}:#{uri.port}"
 
       @report_store.start(url: url)
+
+      return if  @javascript_before_run.nil?
+
+      Capybara.current_session
+        .driver
+        .browser
+        .page
+        .command('Page.addScriptToEvaluateOnNewDocument',
+                 source: @javascript_before_run)
     end
 
     def initialize_report_store(cuprite_options)
       @report_store = Reports::Store.new
       @report_store.metadata[:screenshots_path] = screenshot_operator
-                                                    .screenshots_folder
+                                                  .screenshots_folder
       @report_store.metadata[:window_width] = cuprite_options[:window_size][0]
       @report_store.metadata[:window_height] = cuprite_options[:window_size][1]
     end

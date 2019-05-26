@@ -3,7 +3,6 @@ require_relative '../url_tools'
 module BrowserCrawler
   module EngineUtilities
     class LinkInspector
-
       attr_reader :raw_link, :host_name, :uri
 
       def initialize(raw_link:, host_name:)
@@ -25,7 +24,7 @@ module BrowserCrawler
       end
 
       def full_url
-       @full_url ||= UrlTools.full_url(uri: uri)
+        @full_url ||= UrlTools.full_url(uri: uri)
       end
     end
   end
