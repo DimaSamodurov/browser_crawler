@@ -74,7 +74,7 @@ module BrowserCrawler
 
         logger.info("#{@page_inspector.scan_result.size} links found on the page.")
 
-        unvisited_links = unvisited_links
+        unvisited_links = get_unvisited_links
 
         logger.info("#{unvisited_links.size} will add to unvisited links queue.")
 
@@ -107,7 +107,7 @@ module BrowserCrawler
 
       # returns array consists of unvisited_links
       # if some hooks is existed to execute hooks instead of base behavior
-      def unvisited_links
+      def get_unvisited_links
         exchange_on_hooks(type: :unvisited_links) do
           @page_inspector.scan_result
         end
