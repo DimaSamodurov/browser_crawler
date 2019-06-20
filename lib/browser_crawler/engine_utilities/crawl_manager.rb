@@ -15,7 +15,8 @@ module BrowserCrawler
                   :host_name,
                   :deep_visit,
                   :max_pages,
-                  :logger
+                  :logger,
+                  :page_inspector
 
       def initialize(report_store:,
                      max_pages: 0,
@@ -60,20 +61,20 @@ module BrowserCrawler
       private
 
       def inspect_page(link_inspector:, capybara_session:, screenshot_operator:)
-        page_inspector = PageInspector.new(
+        @page_inspector = PageInspector.new(
           link_inspector: link_inspector,
           capybara_session: capybara_session,
           report_store: report_store
         )
 
         logger.info("Visiting #{link_inspector.raw_link}")
-        page_inspector.visit_page
+        @page_inspector.visit_page
 
-        page_inspector.save_to_report(screenshot_operator: screenshot_operator)
+        @page_inspector.save_to_report(screenshot_operator: screenshot_operator)
 
-        logger.info("#{page_inspector.scan_result.size} links found on the page.")
+        logger.info("#{@page_inspector.scan_result.size} links found on the page.")
 
-        unvisited_links = unvisited_links(page_inspector: page_inspector)
+        unvisited_links = unvisited_links
 
         logger.info("#{unvisited_links.size} will add to unvisited links queue.")
 
@@ -106,9 +107,9 @@ module BrowserCrawler
 
       # returns array consists of unvisited_links
       # if some hooks is existed to execute hooks instead of base behavior
-      def unvisited_links(page_inspector:)
+      def unvisited_links
         exchange_on_hooks(type: :unvisited_links) do
-          page_inspector.scan_result
+          @page_inspector.scan_result
         end
       end
     end
