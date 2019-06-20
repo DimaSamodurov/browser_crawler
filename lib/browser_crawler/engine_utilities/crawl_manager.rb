@@ -1,10 +1,14 @@
 require_relative '../url_tools'
 require_relative 'link_inspector'
 require_relative 'page_inspector'
+require_relative '../hooks_operator'
 
 module BrowserCrawler
   module EngineUtilities
     class CrawlManager
+      include Capybara::DSL
+      include HooksOperator
+
       attr_reader :target_url,
                   :unvisited_links_queue,
                   :report_store,
@@ -67,10 +71,19 @@ module BrowserCrawler
 
         page_inspector.save_to_report(screenshot_operator: screenshot_operator)
 
-        if page_inspector.success?
-          logger.info("#{page_inspector.scan_result.size} links found on the page.")
-          unvisited_links_queue.push(*page_inspector.scan_result).uniq!
-        end
+        logger.info("#{page_inspector.scan_result.size} links found on the page.")
+
+        unvisited_links = unvisited_links(page_inspector: page_inspector)
+
+        logger.info("#{unvisited_links.size} will add to unvisited links queue.")
+
+        return unless add_to_queue?(links: unvisited_links)
+
+        unvisited_links_queue.push(*unvisited_links).uniq!
+      end
+
+      def add_to_queue?(links:)
+        links && !links.empty?
       end
 
       def internal_resource?(link_inspector)
@@ -89,6 +102,14 @@ module BrowserCrawler
 
       def visited_pages
         report_store.visited_pages
+      end
+
+      # returns array consists of unvisited_links
+      # if some hooks is existed to execute hooks instead of base behavior
+      def unvisited_links(page_inspector:)
+        exchange_on_hooks(type: :unvisited_links) do
+          page_inspector.scan_result
+        end
       end
     end
   end

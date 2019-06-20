@@ -13,12 +13,14 @@ describe BrowserCrawler::HooksContainer do
                                         type: :each)
 
       expect(described_class.instance.hooks_container)
-        .to eq(before: { all: [], each: [nil] })
+        .to eq(before: { all: [], each: [nil], unvisited_links: [],
+                         scan_rules: [] })
     end
 
     it 'raises error when type is invalid' do
       error_message = 'Passed hooks type `irregular` is invalid.' \
-                      ' A type has to apply one of the follow values: each, all'
+                      ' A type has to apply one of the follow values:' \
+                      ' each, all, unvisited_links, scan_rules'
 
       expect do
         described_class

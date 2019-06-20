@@ -26,32 +26,6 @@ describe BrowserCrawler::EngineUtilities::PageInspector do
     end
   end
 
-  describe '#success?' do
-    it 'returns true if links were found on a page' do
-      allow(Capybara.current_session)
-        .to receive(:all).with('a').and_return([{ 'href' => '/home' },
-                                                { 'href' => '/login' },
-                                                { 'href' => '/success' }])
-      allow(Capybara.current_session).to receive(:visit)
-
-      link_inspector = BrowserCrawler::EngineUtilities::LinkInspector.new(
-        raw_link: 'https://127.0.0.1/home',
-        host_name: '127.0.0.1'
-      )
-      report_store = BrowserCrawler::Reports::Store.new
-
-      page_inspector = described_class.new(
-        link_inspector: link_inspector,
-        capybara_session: Capybara.current_session,
-        report_store: report_store
-      )
-
-      page_inspector.visit_page
-
-      expect(page_inspector.success?).to eq(true)
-    end
-  end
-
   describe '#save_to_report' do
     it 'saves scan_result to report without screenshot' do
       allow_any_instance_of(Capybara::Session)

@@ -6,11 +6,22 @@ module BrowserCrawler
       run_after_hooks(type: type)
     end
 
+    def exchange_on_hooks(type:, &default_block)
+      hooks_array = BrowserCrawler::HooksContainer
+              .instance.hooks_container[:run_only_one][type]
+
+      if hooks_array && !hooks_array.empty?
+        instance_exec(&hooks_array[0])
+      elsif block_given?
+        instance_exec(&default_block)
+      end
+    end
+
     private
 
     def run_before_hooks(type:)
       before_hook = BrowserCrawler::HooksContainer.instance
-                                                  .hooks_container[:before][type]
+                      .hooks_container[:before][type]
       return unless before_hook
 
       run_hooks(before_hook)
@@ -18,7 +29,7 @@ module BrowserCrawler
 
     def run_after_hooks(type:)
       after_hook = BrowserCrawler::HooksContainer.instance
-                                                 .hooks_container[:after][type]
+                     .hooks_container[:after][type]
       return unless after_hook
 
       run_hooks(after_hook)

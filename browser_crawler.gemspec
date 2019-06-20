@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'activesupport', '~> 5.2', '>= 5.2.2'
-  spec.add_dependency 'capybara', '~> 3.12', '>= 3.12.0'
+  spec.add_dependency 'capybara', '~> 3.24', '>= 3.24.0'
   spec.add_dependency 'chromedriver-helper', '~> 2.1', '>= 2.1.0'
   spec.add_dependency 'cuprite', '~> 0.6.0'
 

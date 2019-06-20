@@ -8,14 +8,14 @@ describe BrowserCrawler::HooksOperator do
 
         def before(type: :all, &hook)
           BrowserCrawler::HooksContainer.instance.add_hook(method: :before,
-                                                           type: type,
-                                                           hook: hook)
+                                                           type:   type,
+                                                           hook:   hook)
         end
 
         def after(type: :all, &hook)
           BrowserCrawler::HooksContainer.instance.add_hook(method: :after,
-                                                           type: type,
-                                                           hook: hook)
+                                                           type:   type,
+                                                           hook:   hook)
         end
       end
 
@@ -48,14 +48,14 @@ describe BrowserCrawler::HooksOperator do
 
         def before(type: :all, &hook)
           BrowserCrawler::HooksContainer.instance.add_hook(method: :before,
-                                                           type: type,
-                                                           hook: hook)
+                                                           type:   type,
+                                                           hook:   hook)
         end
 
         def after(type: :all, &hook)
           BrowserCrawler::HooksContainer.instance.add_hook(method: :after,
-                                                           type: type,
-                                                           hook: hook)
+                                                           type:   type,
+                                                           hook:   hook)
         end
       end
 
@@ -80,6 +80,35 @@ describe BrowserCrawler::HooksOperator do
       end
 
       expect(message).to eq(['before each', 'body', 'after each'])
+    end
+  end
+
+  describe '.exchange_on_hooks' do
+    it 'executes hooks with type :scan_rules or :unvisited_links' do
+      ClassSubject = Class.new do
+        include BrowserCrawler::HooksOperator
+
+        def unvisited_links(&hook)
+          BrowserCrawler::HooksContainer.instance
+            .add_hook(method: :run_only_one,
+                      type:   :unvisited_links,
+                      hook:   hook)
+        end
+      end
+
+      links_array = [1, 2, 3, 4]
+
+      subject = ClassSubject.new
+
+      subject.unvisited_links do
+        links_array.select! { |i| i.even? }
+      end
+
+      subject.exchange_on_hooks(type: :unvisited_links) do
+        links_array.select! { |i| i.odd? }
+      end
+
+      expect(links_array).to eq([2, 4])
     end
   end
 end

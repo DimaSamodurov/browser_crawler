@@ -100,6 +100,14 @@ module BrowserCrawler
       HooksContainer.instance.add_hook(method: :after, type: type, hook: hook)
     end
 
+    def unvisited_links(&hook)
+      HooksContainer.instance.add_hook(type: :unvisited_links, hook: hook)
+    end
+
+    def change_page_scan_rules(&hook)
+      HooksContainer.instance.add_hook(type: :scan_rules, hook: hook)
+    end
+
     private
 
     def initialize_crawler(url)
@@ -110,7 +118,7 @@ module BrowserCrawler
 
       @report_store.start(url: url)
 
-      return if  @javascript_before_run.nil?
+      return if @javascript_before_run.nil?
 
       Capybara.current_session
         .driver

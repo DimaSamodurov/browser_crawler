@@ -8,11 +8,11 @@ module BrowserCrawler
       include Capybara::DSL
       include HooksOperator
 
-      attr_reader :link_inspector,
-                  :link_scanner,
-                  :capybara_session,
-                  :scan_result,
-                  :report_store
+      attr_accessor :link_inspector,
+                    :link_scanner,
+                    :capybara_session,
+                    :scan_result,
+                    :report_store
 
       def initialize(link_inspector:, capybara_session:, report_store:)
         @link_inspector = link_inspector
@@ -46,10 +46,6 @@ module BrowserCrawler
       end
 
       def before_page_scan; end
-
-      def success?
-        scan_result && !scan_result.empty?
-      end
 
       private
 
