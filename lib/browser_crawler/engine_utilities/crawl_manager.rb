@@ -81,6 +81,8 @@ module BrowserCrawler
         return unless add_to_queue?(links: unvisited_links)
 
         unvisited_links_queue.push(*unvisited_links).uniq!
+
+        logger.info("#{unvisited_links_queue.size} - current state the queue.")
       end
 
       def add_to_queue?(links:)
