@@ -35,4 +35,13 @@ describe BrowserCrawler::UrlTools do
       expect(described_class.full_url(uri: URI(url))).to eq(url)
     end
   end
+
+  describe '.get_path_query' do
+    it 'returns url query as string from URI instance' do
+      url = 'https://example.com?query=search&page=1'
+
+      expect(described_class.get_path_query(uri: URI(url)))
+        .to eq('?query=search&page=1')
+    end
+  end
 end

@@ -1,6 +1,14 @@
 require 'spec_helper'
 
 describe BrowserCrawler::HooksOperator do
+  before :each do
+    lambda do
+      return nil unless Object.constants.include?(:ClassSubject)
+
+      Object.send(:remove_const, :ClassSubject)
+    end.call
+  end
+
   describe '.with_hooks_for' do
     it 'executes hooks with type :all for a passed block' do
       ClassSubject = Class.new do

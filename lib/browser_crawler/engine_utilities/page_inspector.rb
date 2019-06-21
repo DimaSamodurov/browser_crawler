@@ -29,7 +29,7 @@ module BrowserCrawler
         visit link_inspector.full_url
 
         with_hooks_for(type: :each) do
-          @scan_result = link_scanner.scan(page: capybara_session)
+          @scan_result = scanning
         end
       end
 
@@ -48,6 +48,10 @@ module BrowserCrawler
       def before_page_scan; end
 
       private
+
+      def scanning
+        link_scanner.scan(page: capybara_session) || []
+      end
 
       def save_screenshot(screenshot_operator)
         return unless screenshot_operator&.save_screenshots?

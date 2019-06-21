@@ -14,13 +14,19 @@ module BrowserCrawler
     end
 
     def full_url(uri:)
+      path_query = get_path_query(uri: uri)
       if uri.port == 80 || uri.port == 443
-        "#{uri.scheme}://#{uri.host}#{uri.path}"
+        "#{uri.scheme}://#{uri.host}#{uri.path}#{path_query}"
       else
-        "#{uri.scheme}://#{uri.host}:#{uri.port}#{uri.path}"
+        "#{uri.scheme}://#{uri.host}:#{uri.port}#{uri.path}#{path_query}"
       end.sub(%r{(/)+$}, '')
     end
 
-    module_function :uri, :uri!, :full_url
+    def get_path_query(uri:)
+      uri_fragment = uri.query
+      uri_fragment.nil? || (uri_fragment == '') ? nil : "?#{uri.query}"
+    end
+
+    module_function :uri, :uri!, :full_url, :get_path_query
   end
 end
