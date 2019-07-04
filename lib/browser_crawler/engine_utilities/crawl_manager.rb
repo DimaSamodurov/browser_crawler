@@ -83,6 +83,12 @@ module BrowserCrawler
         unvisited_links_queue.push(*unvisited_links).uniq!
 
         logger.info("#{unvisited_links_queue.size} - current state the queue.")
+
+      rescue StandardError => error
+        error_link = "visiting link - #{link_inspector.raw_link};\n"
+        error_message = "error message: #{error.message};\n"
+        error_backtrace = "error backtrace: #{error.backtrace.join("\n")};\n"
+        logger.info("Error: #{error_link} #{error_message} #{error_backtrace}")
       end
 
       def add_to_queue?(links:)
