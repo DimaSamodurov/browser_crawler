@@ -1,13 +1,12 @@
 require_relative '../url_tools'
 require_relative 'link_inspector'
 require_relative 'page_inspector'
-require_relative '../hooks_operator'
+require_relative 'inspect_page_process'
 
 module BrowserCrawler
   module EngineUtilities
+    # This main operated class which controls queue of unvisisted links.
     class CrawlManager
-      include Capybara::DSL
-      include HooksOperator
 
       attr_reader :target_url,
                   :unvisited_links_queue,
@@ -61,38 +60,14 @@ module BrowserCrawler
       private
 
       def inspect_page(link_inspector:, capybara_session:, screenshot_operator:)
-        @page_inspector = PageInspector.new(
-          link_inspector: link_inspector,
-          capybara_session: capybara_session,
-          report_store: report_store
-        )
-
-        logger.info("Visiting #{link_inspector.raw_link}")
-        @page_inspector.visit_page
-
-        @page_inspector.save_to_report(screenshot_operator: screenshot_operator)
-
-        logger.info("#{@page_inspector.scan_result.size} links found on the page.")
-
-        unvisited_links = get_unvisited_links
-
-        logger.info("#{unvisited_links.size} will add to unvisited links queue.")
-
-        return unless add_to_queue?(links: unvisited_links)
-
-        unvisited_links_queue.push(*unvisited_links).uniq!
-
-        logger.info("#{unvisited_links_queue.size} - current state the queue.")
-
+        InspectPageProcess.new(link_inspector: link_inspector,
+                               capybara_session: capybara_session,
+                               screenshot_operator: screenshot_operator,
+                               report_store: report_store,
+                               logger: logger)
+                          .call(unvisited_links_queue: unvisited_links_queue)
       rescue StandardError => error
-        error_link = "visiting link - #{link_inspector.raw_link};\n"
-        error_message = "error message: #{error.message};\n"
-        error_backtrace = "error backtrace: #{error.backtrace.join("\n")};\n"
-        logger.info("Error: #{error_link} #{error_message} #{error_backtrace}")
-      end
-
-      def add_to_queue?(links:)
-        links && !links.empty?
+        error_handler(link: link_inspector.raw_link, error: error)
       end
 
       def internal_resource?(link_inspector)
@@ -113,12 +88,12 @@ module BrowserCrawler
         report_store.visited_pages
       end
 
-      # returns array consists of unvisited_links
-      # if some hooks is existed to execute hooks instead of base behavior
-      def get_unvisited_links
-        exchange_on_hooks(type: :unvisited_links) do
-          @page_inspector.scan_result
-        end
+      def error_handler(link:, error:)
+        error_link = "visiting link - #{link};\n"
+        error_message = "error message: #{error.message};\n"
+        error_backtrace = "error backtrace: #{error.backtrace.join("\n")};\n"
+        logger.error("Error: #{error_link} #{error_message} #{error_backtrace}")
+        report_store.record_crawler_error(link: link, error: error)
       end
     end
   end

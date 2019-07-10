@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'rack'
-require 'pry'
+
 describe BrowserCrawler::EngineUtilities::CrawlManager do
   describe '#crawl' do
     let(:server) do
@@ -37,7 +37,7 @@ describe BrowserCrawler::EngineUtilities::CrawlManager do
 
       extracted_links = report_store.pages[url][:extracted_links]
 
-      expect(extracted_links[0]).to match /page1.html/
+      expect(extracted_links[0]).to match(/page1.html/)
       expect(report_store.visited_pages.size).to eq(10)
     end
 
@@ -107,6 +107,27 @@ describe BrowserCrawler::EngineUtilities::CrawlManager do
                                           deep_visit: true)
 
       expect(crawl_manager.link_valid?(link_inspector)).to eq(true)
+    end
+
+    it 'adds errors to a report if a inspect process blows' do
+      logger = double('logger')
+      report_store = BrowserCrawler::Reports::Store.new
+
+      crawl_manager = described_class.new(report_store: report_store,
+                                          max_pages: 0,
+                                          deep_visit: true,
+                                          logger: logger)
+
+      allow_any_instance_of(BrowserCrawler::EngineUtilities::InspectPageProcess)
+        .to(receive(:call)
+              .and_raise(StandardError.new('InspectPageProcess is failed')))
+      expect(logger).to receive(:error).with(/browser-crawler/)
+
+      crawl_manager.crawl(target_url: 'http://browser-crawler.page',
+                          capybara_session: nil)
+
+      expect(report_store.crawler_error['http://browser-crawler.page'].keys)
+        .to eq(%i[message backtrace])
     end
   end
 end

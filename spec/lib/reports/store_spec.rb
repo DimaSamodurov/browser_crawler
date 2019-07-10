@@ -8,7 +8,8 @@ describe BrowserCrawler::Reports::Store do
                                     '/home': nil
                                   }, metadata: {})
 
-      expect(store.to_h).to eq(finished_at: nil,
+      expect(store.to_h).to eq(crawler_error: {},
+                               finished_at: nil,
                                pages: { '/': nil, '/home': nil },
                                links_count: nil,
                                started_at: nil,

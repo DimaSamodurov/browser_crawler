@@ -40,6 +40,7 @@ describe BrowserCrawler::Reports::YamlReport do
               ]
             }
           },
+          crawler_error: {},
           finished_at: nil,
           links_count: 2,
           started_at: nil,
