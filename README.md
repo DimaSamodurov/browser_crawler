@@ -19,12 +19,16 @@ Thus crawler does not perform any updates to the site and can be treated as noni
 
 ## Table of contents
 - [Installation](#installation)
-- [Usage](#usage)
+- [Usage from command line](#usage-from-command-line)
+- [Usage with scripting](#usage-with-scripting)
     - [Callback methods](#callback-methods)
         - [Callback methods Before/After crawling](#callback-methods-before-or-after-crawling)
         - [Callback methods Before/After for each crawling page](#callback-methods-before-or-after-for-each-page)
         - [Callback method is recorded unvisited links](#callback-method-unvisited-links)
         - [Callback method is changed page scan rules](#callback-method-page-scan-rules)
+        - [Setup folder to save report file](#setup-folder-for-report)
+        - [Save report to yaml file](#save-report-to-yaml)
+        - [Save report to csv file](#save-report-to-csv)
     - [Usage with Wraith](#usage-with-wraith)
 - [Restrictions](#restrictions)
 - [Ideas for enhancements](#ideas-for-enchancements)
@@ -49,7 +53,7 @@ Or install it yourself as:
 
     $ gem install browser_crawler
 
-## <a name="usage"></a> Usage
+## <a name="usage-from-command-line"></a> Usage from command line
 
 Without the authentication required:
 ```
@@ -80,6 +84,34 @@ bin/crawl -h
 When finished the crawling report will be saved to `tmp/crawl_report.yml` file by default.
 You can specify the file path using command line options.
 
+## <a name="usage-with-scripting"></a> Usage with scripting
+
+Below pointed an example script which configures the crawler and targets on the `github.com` site
+and after that records the result report as yaml file.
+```
+crawler = BrowserCrawler::Engine.new({
+    browser_options: {
+        headless: true,
+        window_size: [1200, 1600],
+        timeout: 60,
+        browser_options: { 'no-sandbox': nil }
+    },
+    max_pages: 10,
+    deep_visit: true 
+})
+
+crawler.extract_links(url: 'https://github.com')
+crawler.report_save
+```
+
+This gem use external dependency a `cuprite`. The `cuprite` allows working with browser without intermediaries (chrome-driver).
+`browser_options` responsible for configuration the chrome headless browser though the `cuprite`.
+
+* `max_pages` - an additional option to allow to set amount of pages for crawling. 
+By default it equals `nil` and allows the crawler is browsing all pages within a certain domain.
+* `deep_visit` - a mode of the crawler when the crawler checks external resources without collecting links from them.
+
+
 ### <a name="callback-methods"></a> Callback methods
 
 All of them you can use with Capybara DSL.
@@ -88,13 +120,13 @@ All of them you can use with Capybara DSL.
 ```
 crawler = BrowserCrawler::Engine.new()
 
-# visit `example.com` only once before crawling.
+# scroll down page before scan.
 crawler.before do
-  visit 'http://example.com'    
+  page.execute_script 'window.scrollBy(0,10000)' 
 end
 
 crawler.after do
-     
+   page.body  
 end 
 
 crawler.extract_links(url: 'https://github.com')
@@ -104,62 +136,93 @@ crawler.extract_links(url: 'https://github.com')
 ```
 crawler = BrowserCrawler::Engine.new()
 
-# visit `example.com` before crawling each pages from `github.com`.
+# scroll down page before scan.
 crawler.before type: :each do
-  visit 'http://example.com'    
+    page.execute_script 'window.scrollBy(0,10000)' 
 end
 
 crawler.after type: :each do
-     
+   page.body
 end 
 
 crawler.extract_links(url: 'https://github.com')
 ```
 
 #### <a name="callback-method-unvisited-links"></a> Callback method is recorded unvisited links
-Default behavior:
+Default behavior: by default crawler is sent all links from page to an unvisited_links array 
+and after that browses each of them. This callback allows to change this behavior.
 ```
 crawler = BrowserCrawler::Engine.new()
 
+# scan_result consists of array with links from scaned page.
 crawler.unvisited_links do
-     
+  @page_inspector.scan_result   
 end
 
 crawler.extract_links(url: 'https://github.com')
 ```
 
-Changed behavior:
+Changed behavior: change default behavior so that crawler browses only links which consist of `/best-links`.
 ```
 crawler = BrowserCrawler::Engine.new()
 
 crawler.unvisited_links do
-     
+  @page_inspector.scan_result.select { |link| link.include?('/best-links') }   
 end
 
 crawler.extract_links(url: 'https://github.com')
 ```
 
 #### <a name="callback-method-page-scan-rules"></a> Callback method is changed page scan rules
-Default behavior:
+Default behavior: by default crawler get all links from page and move to one to another.
 ```
 crawler = BrowserCrawler::Engine.new()
 
 crawler.change_page_scan_rules do
-     
+  page.all('a').map { |a| a['href'] }   
 end
 
 crawler.extract_links(url: 'https://github.com')
 ```
 
-Changed behavior:
+Changed behavior: change default behavior so that crawler get only links to have selector `paginations`. 
 ```
 crawler = BrowserCrawler::Engine.new()
 
 crawler.change_page_scan_rules do
-     
+  if URI.parse(page.current_url).to_s.include?('/help/')
+    page.all('a.paginations') { |a| a['href'] }
+  else
+    []  
+  end 
 end
 
 crawler.extract_links(url: 'https://github.com')
+```
+
+#### <a name="setup-folder-for-report"></a> Setup folder to save report file
+```
+crawler = BrowserCrawler::Engine.new()
+crawler.extract_links(url: 'https://github.com')
+
+crawler.report_save(folder_path: './reports/')
+```
+If the folder doesn't exist, `BrowserCrawler` create the folder for report.
+
+#### <a name="save-report-to-yaml"></a> Save report to yaml file
+```
+crawler = BrowserCrawler::Engine.new()
+crawler.extract_links(url: 'https://github.com')
+
+crawler.report_save(type: :yaml)
+```
+
+#### <a name="save-report-to-csv"></a> Save report to csv file
+```
+crawler = BrowserCrawler::Engine.new()
+crawler.extract_links(url: 'https://github.com')
+
+crawler.report_save(type: :csv)
 ```
 
 ### <a name="usage-with-wraith"></a> Usage with Wraith
