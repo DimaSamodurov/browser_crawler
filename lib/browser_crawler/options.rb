@@ -2,7 +2,6 @@ require 'optionparser'
 
 module BrowserCrawler
   module Options
-
     module_function
 
     def default_options
@@ -19,7 +18,7 @@ module BrowserCrawler
       p = OptionParser.new do |opts|
         opts.on_tail
 
-        opts.banner = "Site crawler. Usage example: crawl http://localhost:3000"
+        opts.banner = 'Site crawler. Usage example: crawl http://localhost:3000'
 
         opts.on('-U', '[--url] URL', 'Crawls the site starting from the url specified. E.g. http://localhost:3000/welcome.') do |v|
           options[:url] = v
@@ -68,7 +67,7 @@ module BrowserCrawler
           options[:wraith_config] = v
         end
 
-        opts.on('-h', '--help', 'Show this help message and exit.') do | |
+        opts.on('-h', '--help', 'Show this help message and exit.') do
           puts opts
         end
       end

@@ -2,7 +2,7 @@
 
 require 'bundler/setup'
 require 'browser_crawler'
-require "pry" if ENV['DEBUG'] == 'true'
+require 'pry' if ENV['DEBUG'] == 'true'
 
 options = BrowserCrawler::Options.parse_args
 ENV.update(options.transform_keys(&:to_s).transform_values(&:to_s))
@@ -19,12 +19,12 @@ end
 
 if options[:url]
   engine = BrowserCrawler::Engine.new(
-      browser_options: {
-          windows_size: [options[:window_width].to_i,
-                         options[:window_height].to_i]
-      },
-      max_pages: options[:max_pages],
-      screenshots_options: { save_screenshots_to: options[:screenshots_path] }
+    browser_options: {
+      windows_size: [options[:window_width].to_i,
+                     options[:window_height].to_i]
+    },
+    max_pages: options[:max_pages],
+    screenshots_options: { save_screenshots_to: options[:screenshots_path] }
   )
 
   engine.extract_links(url: options[:url]) if options[:url]
@@ -33,19 +33,19 @@ if options[:url]
                      type: options[:report_format])
 
   puts "Report is saved to #{options[:report_folder]} as #{options[:report_format]} file."
-  puts "Total pages visited: #{engine.visited_pages.count}."
+  puts "Total pages visited: #{engine.report_store.visited_pages.count}."
 end
 
 if options[:screenshots_path]
   template = File.read(options[:index_template]) if options[:index_template]
   indexer = BrowserCrawler::Followups::ScreenshotsIndexer
-                .new(template: template)
+            .new(template: template)
   file = indexer.index_directory(options[:screenshots_path])
   puts "Screenshots index is saved to '#{file}'."
 end
 
 if options[:wraith_config]
   followup = BrowserCrawler::Followups::WraithIntegrator
-                 .new(report: File.read("#{options[:report_folder]}/crawler_report.yaml"))
+             .new(report: File.read("#{options[:report_folder]}/crawler_report.yaml"))
   followup.update_config(options[:wraith_config], path_suffix: '?wraith')
 end

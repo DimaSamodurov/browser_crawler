@@ -21,20 +21,30 @@ module BrowserCrawler
     #     custom_attribute: 'Sample report title'
     #   },
     #   unrecognized_links: ['mailto://', 'javascript://'],
+    #   crawler_error: {
+    #     'http://welcome.page' => {
+    #       message: 'Something has a wrong type',
+    #       backtrace: ['/call:10', '/sum: 11']
+    #     }
+    #   },
     #   started_at: 12345,
     #   finished_at: 123456
     # }
 
     # It involves methods which allow to save data to a store structure
     class Store
-      attr_reader :pages, :metadata, :unrecognized_links
+      attr_reader :pages, :metadata, :unrecognized_links, :crawler_error
       attr_accessor :error
 
-      def initialize(pages: {}, metadata: {}, started_at: nil, finished_at: nil)
+      def initialize(pages: {},
+                     metadata: {},
+                     started_at: nil,
+                     finished_at: nil)
         @pages = pages
         @metadata = metadata
         @started_at = started_at
         @finished_at = finished_at
+        @crawler_error = {}
         @unrecognized_links = []
       end
 
@@ -53,6 +63,7 @@ module BrowserCrawler
           .merge(@metadata)
           .merge(
             unrecognized_links: @unrecognized_links,
+            crawler_error: @crawler_error,
             started_at: @started_at,
             finished_at: @finished_at,
             links_count: count_all_links
@@ -60,6 +71,8 @@ module BrowserCrawler
       end
 
       def record_unrecognized_link(link)
+        return if @unrecognized_links.include?(link)
+
         @unrecognized_links << link unless @unrecognized_links.include?(link)
       end
 
@@ -70,11 +83,18 @@ module BrowserCrawler
                             external: false,
                             code: nil)
         @pages[page] = {
-          screenshot:      screenshot_filename,
-          error:           error,
+          screenshot: screenshot_filename,
+          error: error,
           extracted_links: extracted_links,
-          code:            code,
-          external:        external
+          code: code,
+          external: external
+        }
+      end
+
+      def record_crawler_error(link:, error:)
+        @crawler_error[link] = {
+          message: error.message,
+          backtrace: error.backtrace
         }
       end
 
@@ -85,8 +105,8 @@ module BrowserCrawler
       private
 
       def count_all_links
-        @pages.inject(0) do |sum,(_, data)|
-          sum+=data[:extracted_links].size if data && data[:extracted_links]
+        @pages.inject(0) do |sum, (_, data)|
+          sum + data[:extracted_links]&.size.to_i if data && data[:extracted_links]
         end
       end
     end
