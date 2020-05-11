@@ -37,7 +37,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activesupport', '~> 5.2', '>= 5.2.2'
   spec.add_dependency 'capybara', '~> 3.24', '>= 3.24.0'
   spec.add_dependency 'chromedriver-helper', '~> 2.1', '>= 2.1.0'
-  spec.add_dependency 'cuprite', '~> 0.6.0'
+  spec.add_dependency 'cuprite', '~> 0.10'
 
   spec.add_development_dependency 'bundler', '~> 1.17.2', '>= 1.17.2'
   spec.add_development_dependency 'pry-byebug', '~> 3.6', '>= 3.6'
