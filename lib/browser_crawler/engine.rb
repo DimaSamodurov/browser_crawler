@@ -48,7 +48,7 @@ module BrowserCrawler
                    logger: nil)
       screenshots_operator_options = SCREENSHOT_OPERATOR_OPTIONS
                                      .merge(screenshots_options)
-      @screenshot_operator = ScreenshotOperator.new(screenshots_operator_options)
+      @screenshot_operator = ScreenshotOperator.new(**screenshots_operator_options)
 
       cuprite_options = CUPRITE_OPTIONS.merge(browser_options)
 
