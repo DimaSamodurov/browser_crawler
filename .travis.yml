@@ -5,7 +5,7 @@ dist: trusty
 sudo: required
 
 before_install:
-  - gem install bundler -v 1.17.2
+  - gem install bundler -v 2.1.4
 
 addons:
   apt:
@@ -27,3 +27,4 @@ cache: bundler
 rvm:
   - 2.5.3
   - 2.6.2
+  - 2.7.1
